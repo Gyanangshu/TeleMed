@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import axios from '../../utils/axios';
-import socket from '../../utils/socket';
+import socket, { connectSocket } from '../../utils/socket';
 import {
   createPeerConnection,
   createOffer,
@@ -28,6 +28,11 @@ export default function VideoCall() {
   const streamRef = useRef();
 
   useEffect(() => {
+    const token = localStorage.getItem('token');
+    if (token) {
+      connectSocket(token);
+    }
+
     fetchCallDetails();
     setupWebRTC();
 
