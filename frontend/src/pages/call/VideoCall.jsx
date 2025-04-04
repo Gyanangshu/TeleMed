@@ -31,10 +31,20 @@ export default function VideoCall() {
   useEffect(() => {
     const token = localStorage.getItem('token');
     if (token) {
+      console.log('Connecting socket...');
       connectSocket(token);
-    }
+      
+      // Wait for socket connection before proceeding
+      socket.on('connect', () => {
+        console.log('Socket connected successfully');
+        fetchCallDetails();
+      });
 
-    fetchCallDetails();
+      socket.on('connect_error', (error) => {
+        console.error('Socket connection error:', error);
+        setError('Failed to connect to server. Please try again later.');
+      });
+    }
 
     return () => {
       if (streamRef.current) {
@@ -43,12 +53,21 @@ export default function VideoCall() {
       if (peerConnectionRef.current) {
         peerConnectionRef.current.close();
       }
+      socket.off('connect');
+      socket.off('connect_error');
     };
   }, []);
 
   useEffect(() => {
-    if (call) {
+    if (call && socket.connected) {
+      console.log('Socket is connected, setting up WebRTC...');
       setupWebRTC();
+    } else if (call) {
+      console.log('Waiting for socket connection...');
+      socket.on('connect', () => {
+        console.log('Socket connected, setting up WebRTC...');
+        setupWebRTC();
+      });
     }
   }, [call]);
 
