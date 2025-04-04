@@ -40,6 +40,7 @@ socketEvents(io);
 
 // Routes
 app.use('/api/auth', require('./routes/auth'));
+app.use('/api/users', require('./routes/users'));
 app.use('/api/patients', require('./routes/patients'));
 app.use('/api/calls', require('./routes/calls'));
 
