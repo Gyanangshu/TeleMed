@@ -3,7 +3,6 @@ import { useNavigate } from 'react-router-dom';
 import { connectSocket, disconnectSocket } from '../../utils/socket';
 import { createCall } from '../../services/callService';
 import { useAuth } from '../../contexts/AuthContext';
-import './Dashboard.css';
 
 const Dashboard = () => {
   const [patientData, setPatientData] = useState({
