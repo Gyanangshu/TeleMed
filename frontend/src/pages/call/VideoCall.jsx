@@ -67,38 +67,46 @@ const VideoCall = () => {
 
   if (error) {
     return (
-      <div className="video-call-container">
-        <div className="error-message">{error}</div>
+      <div className="h-screen w-full bg-gray-900 flex items-center justify-center">
+        <div className="bg-red-900/80 text-red-100 px-6 py-4 rounded-lg text-center">
+          {error}
+        </div>
       </div>
     );
   }
 
   if (isLoading) {
     return (
-      <div className="video-call-container">
-        <div className="loading-message">Connecting...</div>
+      <div className="h-screen w-full bg-gray-900 flex items-center justify-center">
+        <div className="bg-gray-800/80 text-white px-6 py-4 rounded-lg text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white mx-auto mb-2"></div>
+          Connecting...
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="video-call-container">
-      <div className="video-grid">
-        <div className="remote-video-container">
+    <div className="h-screen w-full bg-gray-900 flex items-center justify-center relative">
+      <div className="w-full h-full relative">
+        {/* Remote Video */}
+        <div className="w-full h-full">
           <video
             ref={remoteVideoRef}
             autoPlay
             playsInline
-            className="remote-video"
+            className="w-full h-full object-cover"
           />
         </div>
-        <div className="local-video-container">
+
+        {/* Local Video */}
+        <div className="absolute bottom-5 right-5 w-60 h-[180px] rounded-lg overflow-hidden border-2 border-white">
           <video
             ref={localVideoRef}
             autoPlay
             playsInline
             muted
-            className="local-video"
+            className="w-full h-full object-cover"
           />
         </div>
       </div>
