@@ -8,6 +8,12 @@ export const connectSocket = (token) => {
     return socket;
   }
 
+  if (socket) {
+    console.log('Socket exists but not connected, cleaning up...');
+    socket.disconnect();
+    socket = null;
+  }
+
   console.log('Initializing socket connection...');
   socket = io(import.meta.env.VITE_SOCKET_URL, {
     autoConnect: false,
@@ -21,18 +27,22 @@ export const connectSocket = (token) => {
     transports: ['websocket', 'polling']
   });
 
+  // Remove any existing listeners to prevent duplicates
+  socket.removeAllListeners();
+
   socket.on('connect', () => {
     console.log('Socket connected successfully');
   });
 
   socket.on('connect_error', (error) => {
-    console.error('Socket connection error:', error);
+    console.error('Socket connection error:', error.message);
   });
 
   socket.on('disconnect', (reason) => {
     console.log('Socket disconnected. Reason:', reason);
-    if (reason === 'io server disconnect') {
-      // Server initiated disconnect, try to reconnect
+    if (reason === 'io server disconnect' || reason === 'transport close') {
+      // Server initiated disconnect or transport closed, try to reconnect
+      console.log('Attempting to reconnect...');
       socket.connect();
     }
   });
@@ -46,7 +56,7 @@ export const connectSocket = (token) => {
   });
 
   socket.on('reconnect_error', (error) => {
-    console.error('Reconnection error:', error);
+    console.error('Reconnection error:', error.message);
   });
 
   socket.on('reconnect_failed', () => {
@@ -62,6 +72,7 @@ export const connectSocket = (token) => {
 export const disconnectSocket = () => {
   if (socket) {
     console.log('Disconnecting socket...');
+    socket.removeAllListeners();
     socket.disconnect();
     socket = null;
   }
@@ -70,6 +81,7 @@ export const disconnectSocket = () => {
 export const getSocket = () => {
   if (!socket) {
     console.warn('Socket not initialized');
+    return null;
   }
   return socket;
 }; 
