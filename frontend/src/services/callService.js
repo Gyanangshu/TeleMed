@@ -1,5 +1,15 @@
 import axios from '../utils/axios';
 
+export const getCalls = async () => {
+  try {
+    const response = await axios.get('/calls/pending');
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching calls:', error);
+    throw error;
+  }
+};
+
 export const getCallById = async (callId) => {
   try {
     const response = await axios.get(`/calls/${callId}`);
