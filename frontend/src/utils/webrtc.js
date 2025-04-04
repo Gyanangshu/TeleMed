@@ -21,6 +21,10 @@ export const setupWebRTC = async (call, user, localVideoRef, remoteVideoRef, pee
       throw new Error('Socket not connected');
     }
 
+    // Join the call room first
+    socket.emit('join-call', call._id);
+    console.log('Joining call room:', call._id);
+
     const iceCandidatesQueue = [];
     let hasRemoteDescription = false;
 
@@ -49,15 +53,20 @@ export const setupWebRTC = async (call, user, localVideoRef, remoteVideoRef, pee
     // Handle incoming tracks
     peerConnection.ontrack = (event) => {
       console.log('Received remote track:', event.track.kind);
-      if (remoteVideoRef.current) {
+      console.log('Remote streams:', event.streams);
+      if (remoteVideoRef.current && event.streams[0]) {
+        console.log('Setting remote stream');
         remoteVideoRef.current.srcObject = event.streams[0];
+        remoteVideoRef.current.play().catch(err => {
+          console.error('Error playing remote video:', err);
+        });
       }
     };
 
     // Handle ICE candidates
     peerConnection.onicecandidate = (event) => {
       if (event.candidate) {
-        console.log('Generated ICE candidate');
+        console.log('Generated ICE candidate:', event.candidate.type);
         socket.emit('ice-candidate', {
           callId: call._id,
           candidate: event.candidate
@@ -65,6 +74,11 @@ export const setupWebRTC = async (call, user, localVideoRef, remoteVideoRef, pee
       } else {
         console.log('ICE gathering complete');
       }
+    };
+
+    // Handle ICE gathering state
+    peerConnection.onicegatheringstatechange = () => {
+      console.log('ICE gathering state:', peerConnection.iceGatheringState);
     };
 
     // Handle connection state changes
@@ -94,32 +108,20 @@ export const setupWebRTC = async (call, user, localVideoRef, remoteVideoRef, pee
       }
     };
 
-    // Handle negotiation needed
-    peerConnection.onnegotiationneeded = async () => {
-      try {
-        if (isInitiator) {
-          console.log('Negotiation needed, creating offer...');
-          const offer = await peerConnection.createOffer();
-          await peerConnection.setLocalDescription(offer);
-          socket.emit('offer', {
-            callId: call._id,
-            offer: peerConnection.localDescription
-          });
-        }
-      } catch (err) {
-        console.error('Error during negotiation:', err);
-        onError?.(err);
-      }
+    // Handle signaling state changes
+    peerConnection.onsignalingstatechange = () => {
+      console.log('Signaling state:', peerConnection.signalingState);
     };
 
     const restartIce = async () => {
       try {
         if (isInitiator) {
+          console.log('Restarting ICE as initiator...');
           const offer = await peerConnection.createOffer({ iceRestart: true });
           await peerConnection.setLocalDescription(offer);
           socket.emit('offer', {
             callId: call._id,
-            offer: peerConnection.localDescription
+            offer
           });
         }
       } catch (err) {
@@ -130,6 +132,7 @@ export const setupWebRTC = async (call, user, localVideoRef, remoteVideoRef, pee
 
     // Process queued ICE candidates
     const processIceCandidates = () => {
+      console.log('Processing queued ICE candidates:', iceCandidatesQueue.length);
       while (iceCandidatesQueue.length) {
         const candidate = iceCandidatesQueue.shift();
         peerConnection.addIceCandidate(new RTCIceCandidate(candidate))
@@ -140,8 +143,12 @@ export const setupWebRTC = async (call, user, localVideoRef, remoteVideoRef, pee
     // Set up socket event handlers
     socket.on('ice-candidate', async ({ candidate, from }) => {
       try {
-        if (from === user._id) return; // Ignore our own candidates
+        if (from === user._id) {
+          console.log('Ignoring own ICE candidate');
+          return;
+        }
         
+        console.log('Received ICE candidate from peer:', candidate.type);
         if (hasRemoteDescription) {
           await peerConnection.addIceCandidate(new RTCIceCandidate(candidate));
           console.log('Added ICE candidate');
@@ -150,8 +157,17 @@ export const setupWebRTC = async (call, user, localVideoRef, remoteVideoRef, pee
           iceCandidatesQueue.push(candidate);
         }
       } catch (err) {
-        console.error('Error adding ICE candidate:', err);
+        console.error('Error handling ICE candidate:', err);
         onError?.(err);
+      }
+    });
+
+    // Handle peer joined event
+    socket.on('peer-joined', ({ userId, role }) => {
+      console.log('Peer joined:', userId, role);
+      if (isInitiator) {
+        console.log('Creating new offer for joined peer...');
+        createAndSendOffer();
       }
     });
 
@@ -159,12 +175,33 @@ export const setupWebRTC = async (call, user, localVideoRef, remoteVideoRef, pee
     const isInitiator = call.operator?._id === user?._id;
     console.log('Is initiator:', isInitiator);
 
+    const createAndSendOffer = async () => {
+      try {
+        console.log('Creating new offer...');
+        const offer = await peerConnection.createOffer();
+        await peerConnection.setLocalDescription(offer);
+        console.log('Created and set local offer');
+        
+        socket.emit('offer', {
+          callId: call._id,
+          offer
+        });
+      } catch (err) {
+        console.error('Error creating/sending offer:', err);
+        onError?.(err);
+      }
+    };
+
     if (isInitiator) {
       // Create and send offer
       socket.on('answer', async ({ answer, from }) => {
         try {
-          if (from === user._id) return; // Ignore our own answer
+          if (from === user._id) {
+            console.log('Ignoring own answer');
+            return;
+          }
           
+          console.log('Received answer from peer');
           await peerConnection.setRemoteDescription(new RTCSessionDescription(answer));
           console.log('Set remote description from answer');
           hasRemoteDescription = true;
@@ -175,26 +212,24 @@ export const setupWebRTC = async (call, user, localVideoRef, remoteVideoRef, pee
         }
       });
 
-      console.log('Creating offer as initiator...');
-      const offer = await peerConnection.createOffer();
-      await peerConnection.setLocalDescription(offer);
-      console.log('Created and set local offer');
-      
-      socket.emit('offer', {
-        callId: call._id,
-        offer
-      });
+      // Initial offer creation
+      await createAndSendOffer();
     } else {
       // Handle incoming offer
       socket.on('offer', async ({ offer, from }) => {
         try {
-          if (from === user._id) return; // Ignore our own offer
+          if (from === user._id) {
+            console.log('Ignoring own offer');
+            return;
+          }
           
+          console.log('Received offer from peer');
           await peerConnection.setRemoteDescription(new RTCSessionDescription(offer));
           console.log('Set remote description from offer');
           hasRemoteDescription = true;
           processIceCandidates();
 
+          console.log('Creating answer...');
           const answer = await peerConnection.createAnswer();
           await peerConnection.setLocalDescription(answer);
           console.log('Created and set local answer');
@@ -223,12 +258,17 @@ export const setupWebRTC = async (call, user, localVideoRef, remoteVideoRef, pee
     // Return cleanup function
     return () => {
       console.log('Cleaning up WebRTC...');
-      stream.getTracks().forEach(track => track.stop());
+      stream.getTracks().forEach(track => {
+        track.stop();
+        console.log('Stopped track:', track.kind);
+      });
       peerConnection.close();
       socket.off('ice-candidate');
       socket.off('offer');
       socket.off('answer');
+      socket.off('peer-joined');
       socket.off('peer-disconnected');
+      socket.emit('leave-call', call._id);
     };
   } catch (err) {
     console.error('Error setting up WebRTC:', err);
