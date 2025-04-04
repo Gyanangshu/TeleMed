@@ -1,322 +1,132 @@
-import { useState, useEffect, useRef } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
-import axios from '../../utils/axios';
-import socket, { connectSocket } from '../../utils/socket';
-import {
-  createPeerConnection,
-  createOffer,
-  createAnswer,
-  handleIceCandidate,
-  addTracks,
-  handleTrack,
-} from '../../utils/webrtc';
+import { useEffect, useState, useRef } from 'react';
+import { useParams } from 'react-router-dom';
+import { connectSocket, disconnectSocket, getSocket } from '../../utils/socket';
+import { setupWebRTC } from '../../utils/webrtc';
+import { getCallById } from '../../services/callService';
+import { useAuth } from '../../contexts/AuthContext';
+import './VideoCall.css';
 
-export default function VideoCall() {
+const VideoCall = () => {
   const { callId } = useParams();
-  const navigate = useNavigate();
+  const { user } = useAuth();
   const [call, setCall] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
-  const [doctorAdvice, setDoctorAdvice] = useState('');
-  const [consultationCompleted, setConsultationCompleted] = useState(false);
-  const [referred, setReferred] = useState(false);
-  const [isDoctor, setIsDoctor] = useState(false);
-  const [isConnected, setIsConnected] = useState(false);
-
-  const localVideoRef = useRef();
-  const remoteVideoRef = useRef();
-  const peerConnectionRef = useRef();
-  const streamRef = useRef();
+  const [error, setError] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const localVideoRef = useRef(null);
+  const remoteVideoRef = useRef(null);
+  const peerConnectionRef = useRef(null);
 
   useEffect(() => {
-    const token = localStorage.getItem('token');
-    if (token) {
-      console.log('Connecting socket...');
-      connectSocket(token);
-      
-      // Wait for socket connection before proceeding
-      socket.on('connect', () => {
-        console.log('Socket connected successfully');
-        fetchCallDetails();
-      });
+    let socket = null;
 
-      socket.on('connect_error', (error) => {
-        console.error('Socket connection error:', error);
-        setError('Failed to connect to server. Please try again later.');
-      });
-    }
-
-    return () => {
-      if (streamRef.current) {
-        streamRef.current.getTracks().forEach(track => track.stop());
+    const fetchCallDetails = async () => {
+      try {
+        console.log('Fetching call details for:', callId);
+        const callData = await getCallById(callId);
+        console.log('Call details received:', callData);
+        setCall(callData);
+      } catch (err) {
+        console.error('Error fetching call details:', err);
+        setError('Failed to fetch call details');
       }
-      if (peerConnectionRef.current) {
-        peerConnectionRef.current.close();
-      }
-      socket.off('connect');
-      socket.off('connect_error');
     };
-  }, []);
 
-  useEffect(() => {
-    if (call && socket.connected) {
-      console.log('Socket is connected, setting up WebRTC...');
-      setupWebRTC();
-    } else if (call) {
-      console.log('Waiting for socket connection...');
-      socket.on('connect', () => {
-        console.log('Socket connected, setting up WebRTC...');
-        setupWebRTC();
-      });
-    }
-  }, [call]);
-
-  const fetchCallDetails = async () => {
-    try {
-      console.log('Fetching call details for ID:', callId);
-      const response = await axios.get(`/calls/${callId}`);
-      console.log('Call details received:', response.data);
-      
-      if (!response.data) {
-        throw new Error('No call data received');
-      }
-
-      setCall(response.data);
-      const userId = localStorage.getItem('userId');
-      console.log('Current user ID:', userId);
-      console.log('Call doctor ID:', response.data.doctor?._id);
-      
-      const isUserDoctor = response.data.doctor?._id === userId;
-      console.log('Is user doctor:', isUserDoctor);
-      setIsDoctor(isUserDoctor);
-    } catch (err) {
-      console.error('Error fetching call details:', err);
-      if (err.response) {
-        console.error('Response status:', err.response.status);
-        console.error('Response data:', err.response.data);
-      }
-      setError('Failed to fetch call details. Please try again.');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const setupWebRTC = async () => {
-    try {
-      console.log('Setting up WebRTC...');
-      const stream = await navigator.mediaDevices.getUserMedia({ 
-        video: true, 
-        audio: true 
-      });
-      console.log('Got media stream:', stream);
-      
-      streamRef.current = stream;
-      if (localVideoRef.current) {
-        localVideoRef.current.srcObject = stream;
-        localVideoRef.current.play().catch(err => {
-          console.error('Error playing local video:', err);
+    const initializeSocket = async () => {
+      try {
+        console.log('Initializing socket connection...');
+        socket = connectSocket(localStorage.getItem('token'));
+        
+        socket.on('connect', () => {
+          console.log('Socket connected, fetching call details...');
+          fetchCallDetails();
         });
-      }
 
-      const peerConnection = createPeerConnection();
-      peerConnectionRef.current = peerConnection;
+        socket.on('connect_error', (error) => {
+          console.error('Socket connection error:', error);
+          setError('Failed to connect to the server');
+        });
 
-      // Add connection state change handler
-      peerConnection.onconnectionstatechange = () => {
-        console.log('Connection state:', peerConnection.connectionState);
-        setIsConnected(peerConnection.connectionState === 'connected');
-      };
-
-      // Add ICE connection state change handler
-      peerConnection.oniceconnectionstatechange = () => {
-        console.log('ICE connection state:', peerConnection.iceConnectionState);
-      };
-
-      // Add signaling state change handler
-      peerConnection.onsignalingstatechange = () => {
-        console.log('Signaling state:', peerConnection.signalingState);
-      };
-
-      addTracks(peerConnection, stream);
-      handleTrack(peerConnection, remoteVideoRef);
-      handleIceCandidate(peerConnection, socket, callId);
-
-      socket.on('ice-candidate', async ({ candidate }) => {
-        try {
-          console.log('Received ICE candidate:', candidate);
-          await peerConnection.addIceCandidate(new RTCIceCandidate(candidate));
-          console.log('Added ICE candidate');
-        } catch (err) {
-          console.error('Error adding ICE candidate:', err);
-        }
-      });
-
-      if (isDoctor) {
-        console.log('Setting up doctor WebRTC...');
-        socket.on('offer', async ({ offer }) => {
-          console.log('Received offer:', offer);
-          try {
-            const answer = await createAnswer(peerConnection, offer);
-            console.log('Created answer:', answer);
-            socket.emit('answer', { callId, answer });
-          } catch (err) {
-            console.error('Error creating answer:', err);
+        socket.on('disconnect', (reason) => {
+          console.log('Socket disconnected:', reason);
+          if (reason === 'io server disconnect') {
+            // Server initiated disconnect, try to reconnect
+            socket.connect();
           }
         });
-      } else {
-        console.log('Setting up operator WebRTC...');
-        const offer = await createOffer(peerConnection);
-        console.log('Created offer:', offer);
-        socket.emit('offer', { callId, offer });
+      } catch (err) {
+        console.error('Error initializing socket:', err);
+        setError('Failed to initialize connection');
       }
+    };
 
-      socket.on('answer', async ({ answer }) => {
-        console.log('Received answer:', answer);
-        try {
-          await peerConnection.setRemoteDescription(new RTCSessionDescription(answer));
-          console.log('Set remote description');
-        } catch (err) {
-          console.error('Error setting remote description:', err);
+    initializeSocket();
+
+    return () => {
+      console.log('Cleaning up socket connection...');
+      if (socket) {
+        disconnectSocket();
+      }
+    };
+  }, [callId]);
+
+  useEffect(() => {
+    if (call && localVideoRef.current && remoteVideoRef.current) {
+      console.log('Setting up WebRTC...');
+      const cleanup = setupWebRTC(
+        call,
+        user,
+        localVideoRef,
+        remoteVideoRef,
+        peerConnectionRef,
+        (error) => {
+          console.error('WebRTC error:', error);
+          setError('Failed to establish video connection');
         }
-      });
+      );
 
-      // Add error handler
-      peerConnection.onicecandidateerror = (event) => {
-        console.error('ICE candidate error:', event);
-      };
-
-    } catch (err) {
-      console.error('WebRTC setup error:', err);
-      setError('Failed to access camera and microphone');
+      return cleanup;
     }
-  };
+  }, [call, user]);
 
-  const handleEndCall = async () => {
-    try {
-      await axios.post(`/calls/${callId}/end`, {
-        consultationCompleted,
-        referred,
-        doctorAdvice,
-      });
-      navigate(`/${localStorage.getItem('userRole')}`);
-    } catch (err) {
-      setError('Failed to end call');
-    }
-  };
-
-  if (loading) {
+  if (error) {
     return (
-      <div className="flex justify-center items-center h-64">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-500"></div>
+      <div className="video-call-container">
+        <div className="error-message">{error}</div>
+      </div>
+    );
+  }
+
+  if (isLoading) {
+    return (
+      <div className="video-call-container">
+        <div className="loading-message">Connecting...</div>
       </div>
     );
   }
 
   return (
-    <div className="h-screen flex">
-      {/* Left Panel - Patient Info & Doctor's Advice */}
-      <div className="w-1/3 bg-white p-6 overflow-y-auto">
-        <div className="space-y-6">
-          <div>
-            <h2 className="text-lg font-medium text-gray-900">Patient Information</h2>
-            <div className="mt-4 space-y-2">
-              <p><span className="font-medium">Name:</span> {call?.patient.name}</p>
-              <p><span className="font-medium">Age:</span> {call?.patient.age}</p>
-              <p><span className="font-medium">Sex:</span> {call?.patient.sex}</p>
-              <p><span className="font-medium">Height:</span> {call?.patient.height} cm</p>
-              <p><span className="font-medium">Weight:</span> {call?.patient.weight} kg</p>
-              <p><span className="font-medium">Oxygen Level:</span> {call?.patient.oxygenLevel}%</p>
-              <p>
-                <span className="font-medium">Blood Pressure:</span>{' '}
-                {call?.patient?.bloodPressure?.systolic}/{call?.patient?.bloodPressure?.diastolic} mmHg
-              </p>
-              <p><span className="font-medium">Symptoms:</span> {call?.patient?.symptoms}</p>
-            </div>
-          </div>
-
-          {isDoctor && (
-            <div>
-              <h2 className="text-lg font-medium text-gray-900">Doctor's Advice</h2>
-              <textarea
-                value={doctorAdvice}
-                onChange={(e) => setDoctorAdvice(e.target.value)}
-                className="mt-2 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-                rows={6}
-                placeholder="Enter your advice here..."
-              />
-            </div>
-          )}
-
-          {isDoctor && (
-            <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700">
-                  Consultation Completed
-                </label>
-                <select
-                  value={consultationCompleted}
-                  onChange={(e) => setConsultationCompleted(e.target.value === 'true')}
-                  className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md"
-                >
-                  <option value="">Select...</option>
-                  <option value="true">Yes</option>
-                  <option value="false">No</option>
-                </select>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700">
-                  Refer Patient
-                </label>
-                <select
-                  value={referred}
-                  onChange={(e) => setReferred(e.target.value === 'true')}
-                  className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md"
-                >
-                  <option value="">Select...</option>
-                  <option value="true">Yes</option>
-                  <option value="false">No</option>
-                </select>
-              </div>
-
-              <button
-                onClick={handleEndCall}
-                disabled={!consultationCompleted || !referred}
-                className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50"
-              >
-                End Call
-              </button>
-            </div>
-          )}
-        </div>
-      </div>
-
-      {/* Right Panel - Video Call */}
-      <div className="flex-1 bg-gray-900 p-6">
-        <div className="relative h-full">
-          {!isConnected && (
-            <div className="absolute inset-0 flex items-center justify-center bg-gray-800 rounded-lg">
-              <div className="text-white text-center">
-                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white mx-auto mb-4"></div>
-                <p>Connecting to call...</p>
-              </div>
-            </div>
-          )}
+    <div className="video-call-container">
+      <div className="video-grid">
+        <div className="remote-video-container">
           <video
             ref={remoteVideoRef}
             autoPlay
             playsInline
-            className="w-full h-full object-cover rounded-lg"
+            className="remote-video"
           />
+        </div>
+        <div className="local-video-container">
           <video
             ref={localVideoRef}
             autoPlay
             playsInline
             muted
-            className="absolute bottom-4 right-4 w-48 h-36 object-cover rounded-lg"
+            className="local-video"
           />
         </div>
       </div>
     </div>
   );
-} 
+};
+
+export default VideoCall; 
