@@ -20,10 +20,15 @@ export const getCallById = async (callId) => {
   }
 };
 
-export const createCall = async (callData) => {
+export const createCall = async (patientData) => {
   try {
-    const response = await axios.post('/calls', callData);
-    return response.data;
+    // First create the patient
+    const patientResponse = await axios.post('/patients', patientData);
+    const patientId = patientResponse.data._id;
+
+    // Then create the call with the patient ID
+    const callResponse = await axios.post('/calls', { patientId });
+    return callResponse.data;
   } catch (error) {
     console.error('Error creating call:', error);
     throw error;
