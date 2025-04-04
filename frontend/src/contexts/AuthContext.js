@@ -12,7 +12,7 @@ export const AuthProvider = ({ children }) => {
     if (token) {
       // Set the token in axios headers
       axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-      
+
       // Fetch user data
       const fetchUser = async () => {
         try {
@@ -38,11 +38,11 @@ export const AuthProvider = ({ children }) => {
     try {
       const response = await axios.post('/auth/login', credentials);
       const { token, user } = response.data;
-      
+
       // Store token
       localStorage.setItem('token', token);
       axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-      
+
       setUser(user);
       return user;
     } catch (error) {
@@ -69,7 +69,11 @@ export const AuthProvider = ({ children }) => {
     return null;
   }
 
-  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
+  return (
+    <AuthContext.Provider value={value}>
+      {children}
+    </AuthContext.Provider>
+  )
 };
 
 export const useAuth = () => {
