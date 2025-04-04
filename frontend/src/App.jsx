@@ -3,8 +3,8 @@ import { AuthProvider } from './contexts/AuthContext';
 import PrivateRoute from './components/PrivateRoute';
 import Login from './pages/auth/Login';
 import Register from './pages/auth/Register';
-import DoctorDashboard from './pages/doctor/DoctorDashboard';
-import OperatorDashboard from './pages/operator/OperatorDashboard';
+import DoctorDashboard from './pages/doctor/Dashboard';
+import OperatorDashboard from './pages/operator/Dashboard';
 import VideoCall from './pages/call/VideoCall';
 import './App.css';
 
