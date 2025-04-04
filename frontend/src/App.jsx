@@ -6,7 +6,6 @@ import Register from './pages/auth/Register';
 import DoctorDashboard from './pages/doctor/Dashboard';
 import OperatorDashboard from './pages/operator/Dashboard';
 import VideoCall from './pages/call/VideoCall';
-import './App.css';
 
 function App() {
   return (
