@@ -5,7 +5,12 @@ const configuration = {
     { urls: 'stun:stun.l.google.com:19302' },
     { urls: 'stun:stun1.l.google.com:19302' },
     { urls: 'stun:stun2.l.google.com:19302' },
-  ],
+    {
+      urls: 'turn:openrelay.metered.ca:80',
+      username: 'openrelayproject',
+      credential: 'openrelayproject'
+    }
+  ]
 };
 
 export const setupWebRTC = async (call, user, localVideoRef, remoteVideoRef, peerConnectionRef, onError) => {
@@ -15,6 +20,9 @@ export const setupWebRTC = async (call, user, localVideoRef, remoteVideoRef, pee
     if (!socket?.connected) {
       throw new Error('Socket not connected');
     }
+
+    const iceCandidatesQueue = [];
+    let hasRemoteDescription = false;
 
     // Get user media
     const stream = await navigator.mediaDevices.getUserMedia({
@@ -42,40 +50,104 @@ export const setupWebRTC = async (call, user, localVideoRef, remoteVideoRef, pee
     peerConnection.ontrack = (event) => {
       console.log('Received remote track:', event.track.kind);
       if (remoteVideoRef.current) {
-        if (!remoteVideoRef.current.srcObject) {
-          remoteVideoRef.current.srcObject = new MediaStream();
-        }
-        remoteVideoRef.current.srcObject.addTrack(event.track);
+        remoteVideoRef.current.srcObject = event.streams[0];
       }
     };
 
     // Handle ICE candidates
     peerConnection.onicecandidate = (event) => {
       if (event.candidate) {
-        console.log('Sending ICE candidate');
+        console.log('Generated ICE candidate');
         socket.emit('ice-candidate', {
           callId: call._id,
           candidate: event.candidate
         });
+      } else {
+        console.log('ICE gathering complete');
       }
     };
 
     // Handle connection state changes
     peerConnection.onconnectionstatechange = () => {
       console.log('Connection state:', peerConnection.connectionState);
+      switch (peerConnection.connectionState) {
+        case 'connected':
+          console.log('Peers connected!');
+          break;
+        case 'disconnected':
+        case 'failed':
+          console.log('Peer connection failed/disconnected, attempting to restart...');
+          restartIce();
+          break;
+        case 'closed':
+          console.log('Peer connection closed');
+          break;
+      }
     };
 
     // Handle ICE connection state changes
     peerConnection.oniceconnectionstatechange = () => {
       console.log('ICE connection state:', peerConnection.iceConnectionState);
+      if (peerConnection.iceConnectionState === 'failed') {
+        console.log('ICE connection failed, restarting ICE...');
+        restartIce();
+      }
+    };
+
+    // Handle negotiation needed
+    peerConnection.onnegotiationneeded = async () => {
+      try {
+        if (isInitiator) {
+          console.log('Negotiation needed, creating offer...');
+          const offer = await peerConnection.createOffer();
+          await peerConnection.setLocalDescription(offer);
+          socket.emit('offer', {
+            callId: call._id,
+            offer: peerConnection.localDescription
+          });
+        }
+      } catch (err) {
+        console.error('Error during negotiation:', err);
+        onError?.(err);
+      }
+    };
+
+    const restartIce = async () => {
+      try {
+        if (isInitiator) {
+          const offer = await peerConnection.createOffer({ iceRestart: true });
+          await peerConnection.setLocalDescription(offer);
+          socket.emit('offer', {
+            callId: call._id,
+            offer: peerConnection.localDescription
+          });
+        }
+      } catch (err) {
+        console.error('Error restarting ICE:', err);
+        onError?.(err);
+      }
+    };
+
+    // Process queued ICE candidates
+    const processIceCandidates = () => {
+      while (iceCandidatesQueue.length) {
+        const candidate = iceCandidatesQueue.shift();
+        peerConnection.addIceCandidate(new RTCIceCandidate(candidate))
+          .catch(err => console.error('Error adding queued ICE candidate:', err));
+      }
     };
 
     // Set up socket event handlers
-    socket.on('ice-candidate', async ({ candidate }) => {
+    socket.on('ice-candidate', async ({ candidate, from }) => {
       try {
-        if (peerConnection.remoteDescription) {
+        if (from === user._id) return; // Ignore our own candidates
+        
+        if (hasRemoteDescription) {
           await peerConnection.addIceCandidate(new RTCIceCandidate(candidate));
           console.log('Added ICE candidate');
+        } else {
+          console.log('Queueing ICE candidate');
+          iceCandidatesQueue.push(candidate);
         }
       } catch (err) {
         console.error('Error adding ICE candidate:', err);
@@ -89,16 +161,21 @@ export const setupWebRTC = async (call, user, localVideoRef, remoteVideoRef, pee
 
     if (isInitiator) {
       // Create and send offer
-      socket.on('answer', async ({ answer }) => {
+      socket.on('answer', async ({ answer, from }) => {
         try {
+          if (from === user._id) return; // Ignore our own answer
+          
           await peerConnection.setRemoteDescription(new RTCSessionDescription(answer));
           console.log('Set remote description from answer');
+          hasRemoteDescription = true;
+          processIceCandidates();
         } catch (err) {
           console.error('Error setting remote description:', err);
           onError?.(err);
         }
       });
 
+      console.log('Creating offer as initiator...');
       const offer = await peerConnection.createOffer();
       await peerConnection.setLocalDescription(offer);
       console.log('Created and set local offer');
@@ -109,10 +186,14 @@ export const setupWebRTC = async (call, user, localVideoRef, remoteVideoRef, pee
       });
     } else {
       // Handle incoming offer
-      socket.on('offer', async ({ offer }) => {
+      socket.on('offer', async ({ offer, from }) => {
         try {
+          if (from === user._id) return; // Ignore our own offer
+          
           await peerConnection.setRemoteDescription(new RTCSessionDescription(offer));
           console.log('Set remote description from offer');
+          hasRemoteDescription = true;
+          processIceCandidates();
 
           const answer = await peerConnection.createAnswer();
           await peerConnection.setLocalDescription(answer);
@@ -129,6 +210,16 @@ export const setupWebRTC = async (call, user, localVideoRef, remoteVideoRef, pee
       });
     }
 
+    // Handle peer disconnection
+    socket.on('peer-disconnected', ({ userId }) => {
+      if (userId !== user._id) {
+        console.log('Peer disconnected, cleaning up...');
+        if (remoteVideoRef.current) {
+          remoteVideoRef.current.srcObject = null;
+        }
+      }
+    });
+
     // Return cleanup function
     return () => {
       console.log('Cleaning up WebRTC...');
@@ -137,6 +228,7 @@ export const setupWebRTC = async (call, user, localVideoRef, remoteVideoRef, pee
       socket.off('ice-candidate');
       socket.off('offer');
       socket.off('answer');
+      socket.off('peer-disconnected');
     };
   } catch (err) {
     console.error('Error setting up WebRTC:', err);

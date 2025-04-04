@@ -23,7 +23,15 @@ const corsOptions = {
 // Socket.IO configuration with CORS
 const io = socketIo(server, {
   cors: corsOptions,
-  transports: ['websocket', 'polling']
+  transports: ['websocket', 'polling'],
+  pingTimeout: 60000, // Increase ping timeout to 60 seconds
+  pingInterval: 25000, // Increase ping interval to 25 seconds
+  connectTimeout: 30000, // Connection timeout
+  allowEIO3: true, // Allow Engine.IO 3 compatibility
+  maxHttpBufferSize: 1e8, // Increase buffer size for large payloads (100MB)
+  path: '/socket.io/', // Explicit path
+  serveClient: false, // Don't serve client files
+  cookie: false // Disable cookies
 });
 
 // Middleware
