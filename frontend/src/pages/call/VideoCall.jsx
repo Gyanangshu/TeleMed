@@ -1,6 +1,6 @@
 import { useEffect, useState, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { connectSocket, disconnectSocket, getSocket } from '../../utils/socket';
+import { connectSocket, disconnectSocket, getSocket, SOCKET_EVENTS, isSocketConnected } from '../../utils/socket';
 import { setupWebRTC } from '../../utils/webrtc';
 import { getCallById } from '../../services/callService';
 import { useAuth } from '../../contexts/AuthContext';
@@ -12,7 +12,7 @@ const VideoCall = () => {
   const [call, setCall] = useState(null);
   const [error, setError] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [socketConnected, setSocketConnected] = useState(false);
+  const [socketConnected, setSocketConnected] = useState(isSocketConnected());
   const [webRTCInitialized, setWebRTCInitialized] = useState(false);
   const localVideoRef = useRef(null);
   const remoteVideoRef = useRef(null);
@@ -20,46 +20,30 @@ const VideoCall = () => {
 
   // Socket connection setup
   useEffect(() => {
-    let socket;
-    const setupSocket = () => {
-      const token = localStorage.getItem('token');
-      if (!token) {
-        console.error('No token found');
-        setError('Authentication required');
-        return;
-      }
+    const token = localStorage.getItem('token');
+    if (!token) {
+      console.error('No token found');
+      setError('Authentication required');
+      return;
+    }
 
-      try {
-        console.log('Connecting socket with token...');
-        socket = connectSocket(token);
-        
-        socket.on('connect', () => {
-          console.log('Socket connected in video call');
-          setSocketConnected(true);
-        });
+    console.log('Setting up socket connection...');
+    const socket = connectSocket(token);
 
-        socket.on('disconnect', () => {
-          console.log('Socket disconnected in video call');
-          setSocketConnected(false);
-          setWebRTCInitialized(false);
-        });
-
-        socket.on('connect_error', (error) => {
-          console.error('Socket connection error in video call:', error);
-          setError('Failed to connect to server');
-          setSocketConnected(false);
-          setWebRTCInitialized(false);
-        });
-      } catch (err) {
-        console.error('Error setting up socket:', err);
-        setError('Failed to setup connection');
-      }
+    // Listen for socket status changes
+    const handleSocketStatus = (event) => {
+      console.log('Socket status changed:', event.detail);
+      setSocketConnected(event.detail);
     };
 
-    setupSocket();
+    window.addEventListener(SOCKET_EVENTS.STATUS_CHANGE, handleSocketStatus);
+
+    // Set initial socket status
+    setSocketConnected(socket?.connected || false);
 
     return () => {
       console.log('Cleaning up video call...');
+      window.removeEventListener(SOCKET_EVENTS.STATUS_CHANGE, handleSocketStatus);
       if (peerConnectionRef.current) {
         peerConnectionRef.current.close();
         peerConnectionRef.current = null;
@@ -167,6 +151,11 @@ const VideoCall = () => {
         <div className="bg-gray-800/80 text-white px-6 py-4 rounded-lg text-center">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white mx-auto mb-2"></div>
           <p>{isLoading ? 'Loading call details...' : 'Connecting to server...'}</p>
+          {!socketConnected && (
+            <p className="mt-2 text-sm text-gray-400">
+              Attempting to establish connection...
+            </p>
+          )}
         </div>
       </div>
     );

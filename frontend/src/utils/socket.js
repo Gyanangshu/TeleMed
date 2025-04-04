@@ -2,9 +2,20 @@ import { io } from 'socket.io-client';
 
 let socket = null;
 
+export const SOCKET_EVENTS = {
+  STATUS_CHANGE: 'socketStatusChange'
+};
+
+const emitStatusChange = (status) => {
+  if (typeof window !== 'undefined') {
+    window.dispatchEvent(new CustomEvent(SOCKET_EVENTS.STATUS_CHANGE, { detail: status }));
+  }
+};
+
 export const connectSocket = (token) => {
   if (socket?.connected) {
     console.log('Socket already connected');
+    emitStatusChange(true);
     return socket;
   }
 
@@ -32,14 +43,17 @@ export const connectSocket = (token) => {
 
   socket.on('connect', () => {
     console.log('Socket connected successfully');
+    emitStatusChange(true);
   });
 
   socket.on('connect_error', (error) => {
     console.error('Socket connection error:', error.message);
+    emitStatusChange(false);
   });
 
   socket.on('disconnect', (reason) => {
     console.log('Socket disconnected. Reason:', reason);
+    emitStatusChange(false);
     if (reason === 'io server disconnect' || reason === 'transport close') {
       // Server initiated disconnect or transport closed, try to reconnect
       console.log('Attempting to reconnect...');
@@ -47,20 +61,19 @@ export const connectSocket = (token) => {
     }
   });
 
-  socket.on('reconnect_attempt', (attemptNumber) => {
-    console.log('Attempting to reconnect:', attemptNumber);
-  });
-
   socket.on('reconnect', (attemptNumber) => {
     console.log('Reconnected after', attemptNumber, 'attempts');
+    emitStatusChange(true);
   });
 
   socket.on('reconnect_error', (error) => {
     console.error('Reconnection error:', error.message);
+    emitStatusChange(false);
   });
 
   socket.on('reconnect_failed', () => {
     console.error('Failed to reconnect after all attempts');
+    emitStatusChange(false);
   });
 
   console.log('Connecting socket...');
@@ -74,6 +87,7 @@ export const disconnectSocket = () => {
     console.log('Disconnecting socket...');
     socket.removeAllListeners();
     socket.disconnect();
+    emitStatusChange(false);
     socket = null;
   }
 };
@@ -84,4 +98,8 @@ export const getSocket = () => {
     return null;
   }
   return socket;
+};
+
+export const isSocketConnected = () => {
+  return socket?.connected || false;
 }; 
