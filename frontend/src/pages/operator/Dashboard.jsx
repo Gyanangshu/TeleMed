@@ -7,6 +7,7 @@ import { useAuth } from '../../contexts/AuthContext';
 const Dashboard = () => {
   const [patientData, setPatientData] = useState({
     name: '',
+    phoneNumber: '',
     age: '',
     sex: '',
     symptoms: '',
@@ -65,17 +66,20 @@ const Dashboard = () => {
     setError(null);
 
     try {
-      // Create the call
+      // Create the call with all required fields
       const call = await createCall({
-        ...patientData,
+        name: patientData.name,
+        phoneNumber: patientData.phoneNumber,
         age: parseInt(patientData.age),
+        sex: patientData.sex,
         height: parseFloat(patientData.height),
         weight: parseFloat(patientData.weight),
         oxygenLevel: parseFloat(patientData.oxygenLevel),
         bloodPressure: {
           systolic: parseInt(patientData.bloodPressure.systolic),
           diastolic: parseInt(patientData.bloodPressure.diastolic)
-        }
+        },
+        symptoms: patientData.symptoms
       });
 
       // Emit socket event for new call
@@ -88,7 +92,7 @@ const Dashboard = () => {
       navigate(`/call/${call._id}`);
     } catch (err) {
       console.error('Error creating call:', err);
-      setError('Failed to create call. Please try again.');
+      setError(err.response?.data?.message || 'Failed to create call. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -109,6 +113,19 @@ const Dashboard = () => {
             value={patientData.name}
             onChange={handleInputChange}
             required
+          />
+        </div>
+
+        <div className="form-group">
+          <label htmlFor="phoneNumber">Phone Number</label>
+          <input
+            type="tel"
+            id="phoneNumber"
+            name="phoneNumber"
+            value={patientData.phoneNumber}
+            onChange={handleInputChange}
+            required
+            placeholder="Enter phone number"
           />
         </div>
 
