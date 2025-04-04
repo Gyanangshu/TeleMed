@@ -21,6 +21,7 @@ export default function VideoCall() {
   const [consultationCompleted, setConsultationCompleted] = useState(false);
   const [referred, setReferred] = useState(false);
   const [isDoctor, setIsDoctor] = useState(false);
+  const [isConnected, setIsConnected] = useState(false);
 
   const localVideoRef = useRef();
   const remoteVideoRef = useRef();
@@ -74,6 +75,12 @@ export default function VideoCall() {
 
       const peerConnection = createPeerConnection();
       peerConnectionRef.current = peerConnection;
+
+      // Add connection state change handler
+      peerConnection.onconnectionstatechange = () => {
+        console.log('Connection state:', peerConnection.connectionState);
+        setIsConnected(peerConnection.connectionState === 'connected');
+      };
 
       addTracks(peerConnection, stream);
       handleTrack(peerConnection, remoteVideoRef);
@@ -223,6 +230,14 @@ export default function VideoCall() {
       {/* Right Panel - Video Call */}
       <div className="flex-1 bg-gray-900 p-6">
         <div className="relative h-full">
+          {!isConnected && (
+            <div className="absolute inset-0 flex items-center justify-center bg-gray-800 rounded-lg">
+              <div className="text-white text-center">
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white mx-auto mb-4"></div>
+                <p>Connecting to call...</p>
+              </div>
+            </div>
+          )}
           <video
             ref={remoteVideoRef}
             autoPlay

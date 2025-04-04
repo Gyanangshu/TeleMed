@@ -51,8 +51,12 @@ export const addTracks = (peerConnection, stream) => {
 
 export const handleTrack = (peerConnection, remoteVideoRef) => {
   peerConnection.ontrack = (event) => {
+    console.log('Received track:', event.track.kind);
     if (remoteVideoRef.current) {
-      remoteVideoRef.current.srcObject = event.streams[0];
+      if (!remoteVideoRef.current.srcObject) {
+        remoteVideoRef.current.srcObject = new MediaStream();
+      }
+      remoteVideoRef.current.srcObject.addTrack(event.track);
     }
   };
 }; 

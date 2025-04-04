@@ -8,28 +8,50 @@ const mongoose = require('mongoose');
 router.post('/', auth, authorize('operator'), async (req, res) => {
   try {
     const { patientId } = req.body;
-    const operatorId = req.body.operatorId || req.user.userId; // Use authenticated user's ID if operatorId is not provided
     
-    // Generate a unique call link (you can use a more sophisticated method)
-    const callLink = `call-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
+    // Log request body for debugging
+    console.log('Request body:', req.body);
     
-    // Set call expiry time to 40 minutes from now
-    const callExpiryTime = new Date(Date.now() + 40 * 60 * 1000);
+    if (!patientId) {
+      return res.status(400).json({ message: 'Patient ID is required' });
+    }
 
-    const call = new Call({
+    const operatorId = req.body.operatorId || req.user.userId;
+    
+    // Generate call details
+    const now = new Date();
+    const callDetails = {
       patient: patientId,
       operator: operatorId,
       status: 'pending',
-      startTime: new Date(),
-      callLink,
-      callExpiryTime
-    });
+      startTime: now,
+      callLink: `call-${now.getTime()}-${Math.random().toString(36).substring(2, 9)}`,
+      callExpiryTime: new Date(now.getTime() + 40 * 60 * 1000) // 40 minutes from now
+    };
 
-    await call.save();
+    // Log call details before creating object
+    console.log('Call details:', callDetails);
 
-    res.status(201).json(call);
+    const call = new Call(callDetails);
+
+    // Log call object before saving
+    console.log('Call object before save:', call.toObject());
+
+    const savedCall = await call.save();
+    console.log('Saved call:', savedCall.toObject());
+
+    res.status(201).json(savedCall);
   } catch (err) {
-    console.error(err);
+    console.error('Error creating call:', err);
+    if (err.name === 'ValidationError') {
+      return res.status(400).json({ 
+        message: 'Validation error', 
+        errors: Object.keys(err.errors).reduce((acc, key) => {
+          acc[key] = err.errors[key].message;
+          return acc;
+        }, {})
+      });
+    }
     res.status(500).json({ message: 'Server error' });
   }
 });
