@@ -1,9 +1,10 @@
 import { useEffect, useState, useRef } from 'react';
 import { useParams } from 'react-router-dom';
-import { connectSocket, disconnectSocket, getSocket } from '../../utils/socket';
+import { connectSocket, disconnectSocket } from '../../utils/socket';
 import { setupWebRTC } from '../../utils/webrtc';
 import { getCallById } from '../../services/callService';
 import { useAuth } from '../../contexts/AuthContext';
+import './VideoCall.css';
 
 const VideoCall = () => {
   const { callId } = useParams();
@@ -16,8 +17,17 @@ const VideoCall = () => {
   const peerConnectionRef = useRef(null);
 
   useEffect(() => {
-    let socket = null;
+    const token = localStorage.getItem('token');
+    if (token) {
+      connectSocket(token);
+    }
 
+    return () => {
+      disconnectSocket();
+    };
+  }, []);
+
+  useEffect(() => {
     const fetchCallDetails = async () => {
       try {
         console.log('Fetching call details for:', callId);
@@ -27,49 +37,18 @@ const VideoCall = () => {
       } catch (err) {
         console.error('Error fetching call details:', err);
         setError('Failed to fetch call details');
+      } finally {
+        setIsLoading(false);
       }
     };
 
-    const initializeSocket = async () => {
-      try {
-        console.log('Initializing socket connection...');
-        socket = connectSocket(localStorage.getItem('token'));
-        
-        socket.on('connect', () => {
-          console.log('Socket connected, fetching call details...');
-          fetchCallDetails();
-        });
-
-        socket.on('connect_error', (error) => {
-          console.error('Socket connection error:', error);
-          setError('Failed to connect to the server');
-        });
-
-        socket.on('disconnect', (reason) => {
-          console.log('Socket disconnected:', reason);
-          if (reason === 'io server disconnect') {
-            // Server initiated disconnect, try to reconnect
-            socket.connect();
-          }
-        });
-      } catch (err) {
-        console.error('Error initializing socket:', err);
-        setError('Failed to initialize connection');
-      }
-    };
-
-    initializeSocket();
-
-    return () => {
-      console.log('Cleaning up socket connection...');
-      if (socket) {
-        disconnectSocket();
-      }
-    };
+    if (callId) {
+      fetchCallDetails();
+    }
   }, [callId]);
 
   useEffect(() => {
-    if (call && localVideoRef.current && remoteVideoRef.current) {
+    if (call && user) {
       console.log('Setting up WebRTC...');
       const cleanup = setupWebRTC(
         call,
