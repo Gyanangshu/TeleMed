@@ -1,4 +1,4 @@
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from './contexts/AuthContext';
 import PrivateRoute from './components/PrivateRoute';
 import Login from './pages/auth/Login';
@@ -10,36 +10,43 @@ import VideoCall from './pages/call/VideoCall';
 function App() {
   return (
     <AuthProvider>
-      <Router>
-        <Routes>
-          <Route path="/login" element={<Login />} />
-          <Route path="/register" element={<Register />} />
-          <Route
-            path="/doctor"
-            element={
-              <PrivateRoute>
-                <DoctorDashboard />
-              </PrivateRoute>
-            }
-          />
-          <Route
-            path="/operator"
-            element={
-              <PrivateRoute>
-                <OperatorDashboard />
-              </PrivateRoute>
-            }
-          />
-          <Route
-            path="/call/:callId"
-            element={
-              <PrivateRoute>
-                <VideoCall />
-              </PrivateRoute>
-            }
-          />
-        </Routes>
-      </Router>
+      <Routes>
+        {/* Redirect root to login */}
+        <Route path="/" element={<Navigate to="/login" replace />} />
+        
+        {/* Auth routes */}
+        <Route path="/login" element={<Login />} />
+        <Route path="/register" element={<Register />} />
+
+        {/* Protected routes */}
+        <Route
+          path="/doctor"
+          element={
+            <PrivateRoute>
+              <DoctorDashboard />
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/operator"
+          element={
+            <PrivateRoute>
+              <OperatorDashboard />
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/call/:callId"
+          element={
+            <PrivateRoute>
+              <VideoCall />
+            </PrivateRoute>
+          }
+        />
+
+        {/* Catch all route - redirect to login */}
+        <Route path="*" element={<Navigate to="/login" replace />} />
+      </Routes>
     </AuthProvider>
   );
 }
