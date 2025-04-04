@@ -13,15 +13,15 @@ const app = express();
 const server = http.createServer(app);
 const io = socketIo(server, {
   cors: {
-    origin: '*',
+    origin: "*",
     methods: ["GET", "POST"]
   }
 });
 
 // Middleware
 app.use(cors({
-  origin: '*',
-  methods: ["GET", "POST", "PUT", "DELETE"]
+  origin: "*",
+  methods: ["GET", "POST","PUT","DELETE"]
 }));
 app.use(express.json());
 

@@ -1,12 +1,10 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from '../../utils/axios';
 import socket from '../../utils/socket';
-import VideoCall from '../call/VideoCall';
 
 export default function OperatorDashboard() {
   const navigate = useNavigate();
-  const [patients, setPatients] = useState([]);
   const [formData, setFormData] = useState({
     name: '',
     phoneNumber: '',
@@ -21,25 +19,6 @@ export default function OperatorDashboard() {
   });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-  const [success, setSuccess] = useState('');
-  const [activeCall, setActiveCall] = useState(null);
-  const [showReportPreview, setShowReportPreview] = useState(false);
-  const [reportContent, setReportContent] = useState('');
-  const [timeLeft, setTimeLeft] = useState(40 * 60); // 40 minutes in seconds
-  const timerRef = useRef(null);
-
-  const fetchPatients = async () => {
-    try {
-      const response = await axios.get('/api/patients/operator/patients');
-      setPatients(response.data);
-    } catch (error) {
-      setError('Error fetching patients');
-    }
-  };
-
-  useEffect(() => {
-    fetchPatients();
-  }, []);
 
   const handleChange = (e) => {
     setFormData({
@@ -56,11 +35,18 @@ export default function OperatorDashboard() {
     try {
       // Create patient record
       const patientResponse = await axios.post('/patients', {
-        ...formData,
+        name: formData.name,
+        phoneNumber: formData.phoneNumber,
+        age: parseInt(formData.age),
+        sex: formData.sex,
+        height: parseFloat(formData.height),
+        weight: parseFloat(formData.weight),
+        oxygenLevel: parseFloat(formData.oxygenLevel),
         bloodPressure: {
-          systolic: formData.bloodPressureSystolic,
-          diastolic: formData.bloodPressureDiastolic,
-        }
+          systolic: parseInt(formData.bloodPressureSystolic),
+          diastolic: parseInt(formData.bloodPressureDiastolic),
+        },
+        symptoms: formData.symptoms,
       });
 
       // Create call
@@ -96,14 +82,6 @@ export default function OperatorDashboard() {
       setLoading(false);
     }
   };
-
-  const formatTime = (seconds) => {
-    const minutes = Math.floor(seconds / 60);
-    const remainingSeconds = seconds % 60;
-    return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
-  };
-
-  
 
   return (
     <div className="max-w-2xl mx-auto py-6 sm:px-6 lg:px-8">

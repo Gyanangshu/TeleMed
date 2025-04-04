@@ -161,7 +161,7 @@ export default function VideoCall() {
           {isDoctor && (
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-white">
+                <label className="block text-sm font-medium text-gray-700">
                   Consultation Completed
                 </label>
                 <select
