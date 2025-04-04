@@ -67,10 +67,19 @@ export default function VideoCall() {
 
   const setupWebRTC = async () => {
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+      console.log('Setting up WebRTC...');
+      const stream = await navigator.mediaDevices.getUserMedia({ 
+        video: true, 
+        audio: true 
+      });
+      console.log('Got media stream:', stream);
+      
       streamRef.current = stream;
       if (localVideoRef.current) {
         localVideoRef.current.srcObject = stream;
+        localVideoRef.current.play().catch(err => {
+          console.error('Error playing local video:', err);
+        });
       }
 
       const peerConnection = createPeerConnection();
@@ -82,13 +91,25 @@ export default function VideoCall() {
         setIsConnected(peerConnection.connectionState === 'connected');
       };
 
+      // Add ICE connection state change handler
+      peerConnection.oniceconnectionstatechange = () => {
+        console.log('ICE connection state:', peerConnection.iceConnectionState);
+      };
+
+      // Add signaling state change handler
+      peerConnection.onsignalingstatechange = () => {
+        console.log('Signaling state:', peerConnection.signalingState);
+      };
+
       addTracks(peerConnection, stream);
       handleTrack(peerConnection, remoteVideoRef);
       handleIceCandidate(peerConnection, socket, callId);
 
       socket.on('ice-candidate', async ({ candidate }) => {
         try {
+          console.log('Received ICE candidate:', candidate);
           await peerConnection.addIceCandidate(new RTCIceCandidate(candidate));
+          console.log('Added ICE candidate');
         } catch (err) {
           console.error('Error adding ICE candidate:', err);
         }
@@ -117,10 +138,17 @@ export default function VideoCall() {
         console.log('Received answer:', answer);
         try {
           await peerConnection.setRemoteDescription(new RTCSessionDescription(answer));
+          console.log('Set remote description');
         } catch (err) {
           console.error('Error setting remote description:', err);
         }
       });
+
+      // Add error handler
+      peerConnection.onicecandidateerror = (event) => {
+        console.error('ICE candidate error:', event);
+      };
+
     } catch (err) {
       console.error('WebRTC setup error:', err);
       setError('Failed to access camera and microphone');
