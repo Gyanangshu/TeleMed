@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { connectSocket, disconnectSocket } from '../../utils/socket';
+import { connectSocket, getSocket } from '../../utils/socket';
 import { createCall } from '../../services/callService';
 import { useAuth } from '../../contexts/AuthContext';
 
@@ -26,12 +26,18 @@ const Dashboard = () => {
   useEffect(() => {
     const token = localStorage.getItem('token');
     if (token) {
-      connectSocket(token);
-    }
+      const socket = connectSocket(token);
+      
+      // Listen for socket connection events
+      socket.on('connect', () => {
+        console.log('Socket connected in operator dashboard');
+      });
 
-    return () => {
-      disconnectSocket();
-    };
+      socket.on('connect_error', (error) => {
+        console.error('Socket connection error in operator dashboard:', error);
+        setError('Connection error. Please try again.');
+      });
+    }
   }, []);
 
   const handleInputChange = (e) => {
@@ -59,11 +65,30 @@ const Dashboard = () => {
     setError(null);
 
     try {
-      const call = await createCall(patientData);
+      // Create the call
+      const call = await createCall({
+        ...patientData,
+        age: parseInt(patientData.age),
+        height: parseFloat(patientData.height),
+        weight: parseFloat(patientData.weight),
+        oxygenLevel: parseFloat(patientData.oxygenLevel),
+        bloodPressure: {
+          systolic: parseInt(patientData.bloodPressure.systolic),
+          diastolic: parseInt(patientData.bloodPressure.diastolic)
+        }
+      });
+
+      // Emit socket event for new call
+      const socket = getSocket();
+      if (socket?.connected) {
+        socket.emit('new-call', { callId: call._id });
+      }
+
+      // Navigate to call page
       navigate(`/call/${call._id}`);
     } catch (err) {
+      console.error('Error creating call:', err);
       setError('Failed to create call. Please try again.');
-      console.error(err);
     } finally {
       setLoading(false);
     }
