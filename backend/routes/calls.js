@@ -91,29 +91,35 @@ router.get('/pending', auth, authorize('doctor'), async (req, res) => {
 router.get('/:id', auth, async (req, res) => {
   try {
     const { id } = req.params;
+    console.log('Fetching call with ID:', id);
     
     // Check if ID is valid
     if (!id || id === 'undefined') {
+      console.log('Invalid call ID provided');
       return res.status(400).json({ message: 'Invalid call ID' });
     }
     
     // Check if ID is a valid MongoDB ObjectId
     if (!mongoose.Types.ObjectId.isValid(id)) {
+      console.log('Invalid MongoDB ObjectId format');
       return res.status(400).json({ message: 'Invalid call ID format' });
     }
     
+    console.log('Querying database for call...');
     const call = await Call.findById(id)
       .populate('patient', 'name phoneNumber age sex symptoms')
       .populate('operator', 'name')
       .populate('doctor', 'name');
 
     if (!call) {
+      console.log('Call not found in database');
       return res.status(404).json({ message: 'Call not found' });
     }
 
+    console.log('Call found:', call);
     res.json(call);
   } catch (err) {
-    console.error(err);
+    console.error('Error fetching call:', err);
     res.status(500).json({ message: 'Server error' });
   }
 });

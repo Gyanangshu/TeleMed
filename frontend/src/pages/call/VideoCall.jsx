@@ -73,12 +73,29 @@ export default function VideoCall() {
 
   const fetchCallDetails = async () => {
     try {
+      console.log('Fetching call details for ID:', callId);
       const response = await axios.get(`/calls/${callId}`);
+      console.log('Call details received:', response.data);
+      
+      if (!response.data) {
+        throw new Error('No call data received');
+      }
+
       setCall(response.data);
       const userId = localStorage.getItem('userId');
-      setIsDoctor(response.data.doctor?._id === userId);
+      console.log('Current user ID:', userId);
+      console.log('Call doctor ID:', response.data.doctor?._id);
+      
+      const isUserDoctor = response.data.doctor?._id === userId;
+      console.log('Is user doctor:', isUserDoctor);
+      setIsDoctor(isUserDoctor);
     } catch (err) {
-      setError('Failed to fetch call details');
+      console.error('Error fetching call details:', err);
+      if (err.response) {
+        console.error('Response status:', err.response.status);
+        console.error('Response data:', err.response.data);
+      }
+      setError('Failed to fetch call details. Please try again.');
     } finally {
       setLoading(false);
     }
