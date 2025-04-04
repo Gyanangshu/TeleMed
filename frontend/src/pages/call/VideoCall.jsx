@@ -34,7 +34,6 @@ export default function VideoCall() {
     }
 
     fetchCallDetails();
-    setupWebRTC();
 
     return () => {
       if (streamRef.current) {
@@ -46,11 +45,18 @@ export default function VideoCall() {
     };
   }, []);
 
+  useEffect(() => {
+    if (call) {
+      setupWebRTC();
+    }
+  }, [call]);
+
   const fetchCallDetails = async () => {
     try {
       const response = await axios.get(`/calls/${callId}`);
       setCall(response.data);
-      setIsDoctor(response.data.doctor?._id === localStorage.getItem('userId'));
+      const userId = localStorage.getItem('userId');
+      setIsDoctor(response.data.doctor?._id === userId);
     } catch (err) {
       setError('Failed to fetch call details');
     } finally {
@@ -82,20 +88,26 @@ export default function VideoCall() {
       });
 
       if (isDoctor) {
+        console.log('Setting up doctor WebRTC...');
         socket.on('offer', async ({ offer }) => {
+          console.log('Received offer:', offer);
           try {
             const answer = await createAnswer(peerConnection, offer);
+            console.log('Created answer:', answer);
             socket.emit('answer', { callId, answer });
           } catch (err) {
             console.error('Error creating answer:', err);
           }
         });
       } else {
+        console.log('Setting up operator WebRTC...');
         const offer = await createOffer(peerConnection);
+        console.log('Created offer:', offer);
         socket.emit('offer', { callId, offer });
       }
 
       socket.on('answer', async ({ answer }) => {
+        console.log('Received answer:', answer);
         try {
           await peerConnection.setRemoteDescription(new RTCSessionDescription(answer));
         } catch (err) {
@@ -103,6 +115,7 @@ export default function VideoCall() {
         }
       });
     } catch (err) {
+      console.error('WebRTC setup error:', err);
       setError('Failed to access camera and microphone');
     }
   };
