@@ -4,7 +4,6 @@ import { connectSocket, disconnectSocket, getSocket } from '../../utils/socket';
 import { setupWebRTC } from '../../utils/webrtc';
 import { getCallById } from '../../services/callService';
 import { useAuth } from '../../contexts/AuthContext';
-import './VideoCall.css';
 
 const VideoCall = () => {
   const { callId } = useParams();
