@@ -180,7 +180,7 @@ const Dashboard = () => {
             required
           />
         </div>
-
+ 
         <div className="form-group">
           <label htmlFor="oxygenLevel">Oxygen Level (%)</label>
           <input
