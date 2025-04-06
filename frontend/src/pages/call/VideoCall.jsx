@@ -97,6 +97,11 @@ const VideoCall = () => {
     console.log('All prerequisites met, setting up WebRTC...');
     console.log('Call:', call);
     console.log('Socket connected:', socketConnected);
+    console.log('User auth data:', {
+      authUser: auth?.user,
+      userIdFromStorage: localStorage.getItem('userId'),
+      userRoleFromStorage: localStorage.getItem('userRole')
+    });
 
     let localStream = null;
     let cleanupFunction = null;
@@ -116,7 +121,8 @@ const VideoCall = () => {
           call,
           { 
             userId: auth?.user?.id || localStorage.getItem('userId'),
-            role: localStorage.getItem('userRole')
+            role: localStorage.getItem('userRole'),
+            _id: localStorage.getItem('userId')
           },
           localVideoRef,
           remoteVideoRef,

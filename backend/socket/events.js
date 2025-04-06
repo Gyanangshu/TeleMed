@@ -13,7 +13,11 @@ module.exports = (io) => {
     try {
       const decoded = jwt.verify(token, process.env.JWT_SECRET);
       socket.user = decoded;
-      console.log('User authenticated:', decoded.userId);
+      console.log('User authenticated on socket connection:', {
+        userId: decoded.userId, 
+        role: decoded.role,
+        socketId: socket.id
+      });
       next();
     } catch (err) {
       console.error('Token verification failed:', err);
@@ -81,10 +85,12 @@ module.exports = (io) => {
         socket.join(callId);
         console.log(`User ${socket.user.userId} joined call ${callId}`);
         
-        // Notify others in the room
+        // Notify others in the room with more detailed information
         socket.to(callId).emit('peer-joined', {
           userId: socket.user.userId,
-          role: socket.user.role
+          role: socket.user.role,
+          timestamp: new Date().toISOString(),
+          socketId: socket.id
         });
       } catch (err) {
         console.error('Error joining call room:', err);

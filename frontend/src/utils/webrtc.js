@@ -166,9 +166,29 @@ export const setupWebRTC = async (call, user, localVideoRef, remoteVideoRef, pee
 
     // Determine if user is the call initiator
     // This needs to be defined before peer-joined handler
+    console.log('Call data for initiator check:', {
+      call: {
+        _id: call._id,
+        operator: call.operator,
+        status: call.status
+      },
+      user: user
+    });
+    
     const operatorId = call.operator?._id?.toString() || call.operator?.id?.toString();
     const userId = user.userId?.toString();
-    const isInitiator = operatorId === userId || user.role === 'operator';
+    
+    // Force operator role to be initiator regardless of ID match
+    // This ensures at least one side will create the offer
+    let isInitiator = false;
+    
+    if (user.role === 'operator') {
+      isInitiator = true;
+      console.log('Setting as initiator because user is an operator');
+    } else if (operatorId === userId) {
+      isInitiator = true;
+      console.log('Setting as initiator because user ID matches operator ID');
+    }
     
     console.log('Is initiator check:', {
       'operatorId': operatorId,
