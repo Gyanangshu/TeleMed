@@ -39,8 +39,12 @@ export const AuthProvider = ({ children }) => {
       const response = await axios.post('/api/auth/login', credentials);
       const { token, user } = response.data;
 
-      // Store token
+      // Store token and user info
       localStorage.setItem('token', token);
+      localStorage.setItem('userRole', user.role);
+      localStorage.setItem('userId', user.id);
+      
+      // Set axios default header
       axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
 
       setUser(user);
@@ -52,8 +56,14 @@ export const AuthProvider = ({ children }) => {
   };
 
   const logout = () => {
+    // Clear all auth data
     localStorage.removeItem('token');
+    localStorage.removeItem('userRole');
+    localStorage.removeItem('userId');
+    
+    // Clear axios header
     delete axios.defaults.headers.common['Authorization'];
+    
     setUser(null);
   };
 

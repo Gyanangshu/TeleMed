@@ -22,8 +22,24 @@ module.exports = (io) => {
   });
 
   io.on('connection', (socket) => {
-    console.log('User connected:', socket.user.userId);
+    console.log('User connected:', socket.user.userId, 'Role:', socket.user.role);
     let currentCallId = null;
+
+    // Join role-specific room
+    if (socket.user.role === 'doctor') {
+      socket.join('doctors');
+      console.log(`Doctor ${socket.user.userId} joined doctors room`);
+      
+      // Confirm room membership
+      const rooms = Array.from(socket.rooms);
+      console.log(`Doctor ${socket.user.userId} is in rooms:`, rooms);
+      
+      // Send a welcome message to confirm event reception
+      socket.emit('doctor-room-joined', { 
+        message: 'You have joined the doctors room and will receive call notifications',
+        timestamp: new Date()
+      });
+    }
 
     // Handle connection errors
     socket.on('error', (error) => {
@@ -156,11 +172,5 @@ module.exports = (io) => {
         from: socket.user.userId
       });
     });
-
-    // Join role-specific room
-    if (socket.user.role === 'doctor') {
-      socket.join('doctors');
-      console.log(`Doctor ${socket.user.userId} joined doctors room`);
-    }
   });
 }; 

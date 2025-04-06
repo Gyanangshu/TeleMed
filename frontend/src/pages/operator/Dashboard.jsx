@@ -22,13 +22,13 @@ const Dashboard = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { auth, logout } = useAuth();
 
   useEffect(() => {
     const token = localStorage.getItem('token');
     if (token) {
       const socket = connectSocket(token);
-      
+
       // Listen for socket connection events
       socket.on('connect', () => {
         console.log('Socket connected in operator dashboard');
@@ -98,140 +98,178 @@ const Dashboard = () => {
     }
   };
 
+  const handleLogout = () => {
+    logout();
+    navigate('/');
+  };
+
   return (
-    <div className="dashboard">
-      <h1>Operator Dashboard</h1>
-      <form onSubmit={handleSubmit} className="patient-form">
-        {error && <div className="error-message">{error}</div>}
-        
-        <div className="form-group">
-          <label htmlFor="name">Patient Name</label>
-          <input
-            type="text"
-            id="name"
-            name="name"
-            value={patientData.name}
-            onChange={handleInputChange}
-            required
-          />
-        </div>
-
-        <div className="form-group">
-          <label htmlFor="phoneNumber">Phone Number</label>
-          <input
-            type="tel"
-            id="phoneNumber"
-            name="phoneNumber"
-            value={patientData.phoneNumber}
-            onChange={handleInputChange}
-            required
-            placeholder="Enter phone number"
-          />
-        </div>
-
-        <div className="form-group">
-          <label htmlFor="age">Age</label>
-          <input
-            type="number"
-            id="age"
-            name="age"
-            value={patientData.age}
-            onChange={handleInputChange}
-            required
-          />
-        </div>
-
-        <div className="form-group">
-          <label htmlFor="sex">Sex</label>
-          <select
-            id="sex"
-            name="sex"
-            value={patientData.sex}
-            onChange={handleInputChange}
-            required
+    <div className="min-h-screen bg-gray-100">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+        <div className="flex justify-between items-center mb-6">
+          <h1 className="text-3xl font-bold text-gray-900">Operator Dashboard</h1>
+          <button
+            onClick={handleLogout}
+            className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-md flex items-center gap-2"
           >
-            <option value="">Select...</option>
-            <option value="male">Male</option>
-            <option value="female">Female</option>
-            <option value="other">Other</option>
-          </select>
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+              <path fillRule="evenodd" d="M3 3a1 1 0 011 1v12a1 1 0 11-2 0V4a1 1 0 011-1zm7.707 3.293a1 1 0 010 1.414L9.414 9H17a1 1 0 110 2H9.414l1.293 1.293a1 1 0 01-1.414 1.414l-3-3a1 1 0 010-1.414l3-3a1 1 0 011.414 0z" clipRule="evenodd" />
+            </svg>
+            Logout
+          </button>
         </div>
 
-        <div className="form-group">
-          <label htmlFor="height">Height (cm)</label>
-          <input
-            type="number"
-            id="height"
-            name="height"
-            value={patientData.height}
-            onChange={handleInputChange}
-            required
-          />
-        </div>
+        <form onSubmit={handleSubmit} className="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4">
+          {error && (
+            <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4" role="alert">
+              <span className="block sm:inline">{error}</span>
+            </div>
+          )}
 
-        <div className="form-group">
-          <label htmlFor="weight">Weight (kg)</label>
-          <input
-            type="number"
-            id="weight"
-            name="weight"
-            value={patientData.weight}
-            onChange={handleInputChange}
-            required
-          />
-        </div>
- 
-        <div className="form-group">
-          <label htmlFor="oxygenLevel">Oxygen Level (%)</label>
-          <input
-            type="number"
-            id="oxygenLevel"
-            name="oxygenLevel"
-            value={patientData.oxygenLevel}
-            onChange={handleInputChange}
-            required
-          />
-        </div>
+          <div className='grid grid-cols-2 gap-6'>
+            <div className='flex flex-col gap-3'>
+              <div className="flex flex-col gap-1">
+                <label htmlFor="name" className='text-sm font-medium text-gray-700'>Patient Name</label>
+                <input
+                  type="text"
+                  id="name"
+                  name="name"
+                  value={patientData.name}
+                  onChange={handleInputChange}
+                  required
+                  className='border border-gray-300 outline-blue-500 rounded-md p-2'
+                />
+              </div>
 
-        <div className="form-group">
-          <label>Blood Pressure (mmHg)</label>
-          <div className="blood-pressure-inputs">
-            <input
-              type="number"
-              name="bloodPressure.systolic"
-              value={patientData.bloodPressure.systolic}
+              <div className="flex flex-col gap-1">
+                <label htmlFor="phoneNumber" className='text-sm font-medium text-gray-700'>Phone Number</label>
+                <input
+                  type="number"
+                  id="phoneNumber"
+                  name="phoneNumber"
+                  value={patientData.phoneNumber}
+                  onChange={handleInputChange}
+                  required
+                  className='border border-gray-300 outline-blue-500 rounded-md p-2'
+                />
+              </div>
+
+              <div className="flex flex-col gap-1">
+                <label htmlFor="age" className='text-sm font-medium text-gray-700'>Age</label>
+                <input
+                  type="number"
+                  id="age"
+                  name="age"
+                  value={patientData.age}
+                  onChange={handleInputChange}
+                  required
+                  className='border border-gray-300 outline-blue-500 rounded-md p-2'
+                />
+              </div>
+
+              <div className="flex flex-col gap-1">
+                <label htmlFor="sex" className='text-sm font-medium text-gray-700'>Sex</label>
+                <select
+                  id="sex"
+                  name="sex"
+                  value={patientData.sex}
+                  onChange={handleInputChange}
+                  required
+                  className='border border-gray-300 outline-blue-500 rounded-md p-2'
+                >
+                  <option value="">Select...</option>
+                  <option value="male">Male</option>
+                  <option value="female">Female</option>
+                  <option value="other">Other</option>
+                </select>
+              </div>
+            </div>
+
+            <div className='flex flex-col gap-3'>
+              <div className="flex flex-col gap-1">
+                <label htmlFor="height" className='text-sm font-medium text-gray-700'>Height (cm)</label>
+                <input
+                  type="number"
+                  id="height"
+                  name="height"
+                  value={patientData.height}
+                  onChange={handleInputChange}
+                  required
+                  className='border border-gray-300 outline-blue-500 rounded-md p-2'
+                />
+              </div>
+
+              <div className="flex flex-col gap-1">
+                <label htmlFor="weight" className='text-sm font-medium text-gray-700'>Weight (kg)</label>
+                <input
+                  type="number"
+                  id="weight"
+                  name="weight"
+                  value={patientData.weight}
+                  onChange={handleInputChange}
+                  required
+                  className='border border-gray-300 outline-blue-500 rounded-md p-2'
+                />
+              </div>
+
+              <div className="flex flex-col gap-1">
+                <label htmlFor="oxygenLevel" className='text-sm font-medium text-gray-700'>Oxygen Level (%)</label>
+                <input
+                  type="number"
+                  id="oxygenLevel"
+                  name="oxygenLevel"
+                  value={patientData.oxygenLevel}
+                  onChange={handleInputChange}
+                  required
+                  className='border border-gray-300 outline-blue-500 rounded-md p-2'
+                />
+              </div>
+
+              <div className="flex flex-col gap-1">
+                <label className='text-sm font-medium text-gray-700'>Blood Pressure (mmHg)</label>
+                <div className="flex items-center gap-2">
+                  <input
+                    type="number"
+                    name="bloodPressure.systolic"
+                    value={patientData.bloodPressure.systolic}
+                    onChange={handleInputChange}
+                    placeholder="Systolic"
+                    required
+                    className='border border-gray-300 outline-blue-500 rounded-md p-2'
+                  />
+                  <span>/</span>
+                  <input
+                    type="number"
+                    name="bloodPressure.diastolic"
+                    value={patientData.bloodPressure.diastolic}
+                    onChange={handleInputChange}
+                    placeholder="Diastolic"
+                    required
+                    className='border border-gray-300 outline-blue-500 rounded-md p-2'
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="flex flex-col gap-1 my-4">
+            <label htmlFor="symptoms" className='text-sm font-medium text-gray-700'>Symptoms</label>
+            <textarea
+              id="symptoms"
+              name="symptoms"
+              value={patientData.symptoms}
               onChange={handleInputChange}
-              placeholder="Systolic"
               required
-            />
-            <span>/</span>
-            <input
-              type="number"
-              name="bloodPressure.diastolic"
-              value={patientData.bloodPressure.diastolic}
-              onChange={handleInputChange}
-              placeholder="Diastolic"
-              required
+              className='border border-gray-300 outline-blue-500 rounded-md p-2'
             />
           </div>
-        </div>
 
-        <div className="form-group">
-          <label htmlFor="symptoms">Symptoms</label>
-          <textarea
-            id="symptoms"
-            name="symptoms"
-            value={patientData.symptoms}
-            onChange={handleInputChange}
-            required
-          />
-        </div>
-
-        <button type="submit" disabled={loading}>
-          {loading ? 'Creating Call...' : 'Start Call'}
-        </button>
-      </form>
-    </div>
+          <button type="submit" disabled={loading} className='bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-md flex items-center gap-2'>
+            {loading ? 'Creating Call...' : 'Start Call'}
+          </button>
+        </form>
+      </div >
+    </div >
   );
 };
 

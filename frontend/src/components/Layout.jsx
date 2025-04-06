@@ -35,13 +35,13 @@ export default function Layout() {
             <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
               <div className="flex h-16 justify-between">
                 <div className="flex">
-                  <div className="flex flex-shrink-0 items-center">
+                  {/* <div className="flex flex-shrink-0 items-center">
                     <img
                       className="h-8 w-auto"
                       src="/logo.png"
                       alt="Sheetal Chaya"
                     />
-                  </div>
+                  </div> */}
                   <div className="hidden sm:ml-6 sm:flex sm:space-x-8">
                     {filteredNavigation.map((item) => (
                       <a

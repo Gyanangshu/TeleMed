@@ -17,13 +17,15 @@ export const setupWebRTC = async (call, user, localVideoRef, remoteVideoRef, pee
   try {
     console.log('Setting up WebRTC...');
     const socket = getSocket();
-    if (!socket?.connected) {
-      throw new Error('Socket not connected');
+    if (!socket) {
+      console.error('Socket not connected');
+      onError('Socket not connected');
+      return;
     }
 
-    // Join the call room first
-    socket.emit('join-call', call._id);
+    // Join the call room
     console.log('Joining call room:', call._id);
+    socket.emit('join-call', call._id);
 
     const iceCandidatesQueue = [];
     let hasRemoteDescription = false;

@@ -34,23 +34,46 @@ const io = socketIo(server, {
   cookie: false // Disable cookies
 });
 
+// Add socket.io connection logging
+io.engine.on('connection_error', (err) => {
+  console.error('Socket.io connection error:', err);
+});
+
+// Log when adapter creates or deletes a room
+io.of('/').adapter.on('create-room', (room) => {
+  console.log(`Room ${room} was created`);
+});
+
+io.of('/').adapter.on('join-room', (room, id) => {
+  console.log(`Socket ${id} joined room ${room}`);
+});
+
+io.of('/').adapter.on('leave-room', (room, id) => {
+  console.log(`Socket ${id} left room ${room}`);
+});
+
 // Middleware
 app.use(cors(corsOptions));
 app.use(express.json());
-
-// Connect to MongoDB
-mongoose.connect(process.env.MONGODB_URI)
-  .then(() => console.log('Connected to MongoDB'))
-  .catch((err) => console.error('MongoDB connection error:', err));
 
 // Initialize socket.io events
 socketEvents(io);
 
 // Routes
-app.use('/api/auth', require('./routes/auth'));
-app.use('/api/users', require('./routes/users'));
-app.use('/api/patients', require('./routes/patients'));
-app.use('/api/calls', require('./routes/calls'));
+const authRoutes = require('./routes/auth');
+const userRoutes = require('./routes/users');
+const patientRoutes = require('./routes/patients');
+const callRoutes = require('./routes/calls')(io); // Pass io to the calls routes
+
+app.use('/api/auth', authRoutes);
+app.use('/api/users', userRoutes);
+app.use('/api/patients', patientRoutes);
+app.use('/api/calls', callRoutes);
+
+// Connect to MongoDB
+mongoose.connect(process.env.MONGODB_URI)
+  .then(() => console.log('Connected to MongoDB'))
+  .catch((err) => console.error('MongoDB connection error:', err));
 
 const PORT = process.env.PORT || 5000;
 server.listen(PORT, () => {

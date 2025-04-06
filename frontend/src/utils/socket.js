@@ -26,29 +26,50 @@ export const connectSocket = (token) => {
   }
 
   console.log('Initializing socket connection...');
-  socket = io(import.meta.env.VITE_SOCKET_URL, {
+  const socketUrl = import.meta.env.VITE_SOCKET_URL || 'http://localhost:5000';
+  console.log('Connecting to socket URL:', socketUrl);
+  
+  socket = io(socketUrl, {
     autoConnect: false,
     reconnection: true,
-    reconnectionAttempts: 5,
-    reconnectionDelay: 1000,
-    timeout: 20000,
+    reconnectionAttempts: 10,       // Increased from 5
+    reconnectionDelay: 2000,        // Increased from 1000
+    timeout: 30000,                 // Increased from 20000
     auth: {
       token
     },
-    transports: ['websocket', 'polling']
+    transports: ['websocket', 'polling'],
+    forceNew: true,
+    // Add explicit path to ensure we connect to the right endpoint
+    path: '/socket.io/'
   });
 
   // Remove any existing listeners to prevent duplicates
   socket.removeAllListeners();
 
   socket.on('connect', () => {
-    console.log('Socket connected successfully');
+    console.log('Socket connected successfully with ID:', socket.id);
+    console.log('Socket connected to namespace:', socket.nsp);
     emitStatusChange(true);
   });
 
   socket.on('connect_error', (error) => {
     console.error('Socket connection error:', error.message);
+    console.error('Connection details:', {
+      url: socketUrl,
+      transport: socket.io.engine.transport.name,
+      connected: socket.connected,
+      id: socket.id
+    });
     emitStatusChange(false);
+    
+    // Try to reconnect after a delay
+    setTimeout(() => {
+      console.log('Attempting to reconnect after timeout...');
+      // Try with polling if websocket failed
+      socket.io.opts.transports = ['polling', 'websocket'];
+      socket.connect();
+    }, 3000);
   });
 
   socket.on('disconnect', (reason) => {
