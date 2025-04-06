@@ -56,12 +56,41 @@ export const setupWebRTC = async (call, user, localVideoRef, remoteVideoRef, pee
     peerConnection.ontrack = (event) => {
       console.log('Received remote track:', event.track.kind);
       console.log('Remote streams:', event.streams);
+      
       if (remoteVideoRef.current && event.streams[0]) {
         console.log('Setting remote stream');
-        remoteVideoRef.current.srcObject = event.streams[0];
-        remoteVideoRef.current.play().catch(err => {
-          console.error('Error playing remote video:', err);
-        });
+        
+        // Don't set srcObject if it's already set to the same stream to avoid interruption
+        if (remoteVideoRef.current.srcObject !== event.streams[0]) {
+          // Save the current play state
+          const wasPlaying = !remoteVideoRef.current.paused;
+          
+          // Set the new stream
+          remoteVideoRef.current.srcObject = event.streams[0];
+          
+          // Only call play() if the video was already playing or hasn't started yet
+          if (wasPlaying || remoteVideoRef.current.readyState < 1) {
+            // Use requestAnimationFrame to delay the play call slightly
+            requestAnimationFrame(() => {
+              // Check if the video element is still in the DOM before playing
+              if (remoteVideoRef.current) {
+                remoteVideoRef.current.play()
+                  .then(() => console.log('Remote video playback started'))
+                  .catch(err => {
+                    console.error('Error playing remote video:', err);
+                    // Try again after a short delay if it failed
+                    setTimeout(() => {
+                      if (remoteVideoRef.current) {
+                        remoteVideoRef.current.play().catch(e => 
+                          console.error('Error on retry playing remote video:', e)
+                        );
+                      }
+                    }, 1000);
+                  });
+              }
+            });
+          }
+        }
       }
     };
 
@@ -418,9 +447,31 @@ export const handleTrack = (peerConnection, remoteVideoRef) => {
       
       // Ensure the video element is playing
       if (event.track.kind === 'video') {
-        remoteVideoRef.current.play().catch(err => {
-          console.error('Error playing remote video:', err);
-        });
+        // Save the current play state
+        const wasPlaying = !remoteVideoRef.current.paused;
+        
+        // Only call play() if the video was already playing or hasn't started yet
+        if (wasPlaying || remoteVideoRef.current.readyState < 1) {
+          // Use requestAnimationFrame to delay the play call slightly
+          requestAnimationFrame(() => {
+            // Check if the video element is still in the DOM before playing
+            if (remoteVideoRef.current) {
+              remoteVideoRef.current.play()
+                .then(() => console.log('Remote video playback started in handleTrack'))
+                .catch(err => {
+                  console.error('Error playing remote video in handleTrack:', err);
+                  // Try again after a short delay if it failed
+                  setTimeout(() => {
+                    if (remoteVideoRef.current) {
+                      remoteVideoRef.current.play().catch(e => 
+                        console.error('Error on retry playing remote video in handleTrack:', e)
+                      );
+                    }
+                  }, 1000);
+                });
+            }
+          });
+        }
       }
     }
   };

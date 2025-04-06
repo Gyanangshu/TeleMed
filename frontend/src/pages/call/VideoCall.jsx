@@ -417,7 +417,7 @@ const VideoCall = () => {
           {/* Side Panel - only for doctors */}
           {isDoctor && (
             <div 
-              className={`absolute top-0 left-0 h-full bg-white z-10 transition-all duration-300 ease-in-out ${
+              className={`absolute top-0 left-0 h-full bg-white z-10 transition-all duration-300 ease-in-out overflow-x-scroll ${
                 isSidePanelOpen ? 'w-1/3 opacity-100' : 'w-0 opacity-0'
               } overflow-hidden`}
             >
