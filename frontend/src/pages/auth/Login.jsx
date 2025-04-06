@@ -91,8 +91,8 @@ export default function Login() {
               Sign in
             </button>
 
-            <Link to="/register" className="text-sm text-gray-500 hover:text-gray-700">
-              Don't have an account? Register
+            <Link to="/register" className="text-sm center mt-1">
+              Don't have an account? <span className='text-red-500'>Register</span>
             </Link>
           </div>
         </form>

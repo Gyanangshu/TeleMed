@@ -136,9 +136,9 @@ export default function Register() {
         <div className="text-sm text-center">
           <a
             href="/login"
-            className="font-medium text-indigo-600 hover:text-indigo-500"
+            className="font-mediu"
           >
-            Already have an account? Login
+            Already have an account? <span className='text-red-500'>Login</span>
           </a>
         </div>
       </div>
