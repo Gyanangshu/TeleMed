@@ -16,7 +16,7 @@ export const AuthProvider = ({ children }) => {
       // Fetch user data
       const fetchUser = async () => {
         try {
-          const response = await axios.get('/users/me');
+          const response = await axios.get('/api/users/me');
           setUser(response.data);
         } catch (error) {
           console.error('Error fetching user:', error);
@@ -36,7 +36,7 @@ export const AuthProvider = ({ children }) => {
 
   const login = async (credentials) => {
     try {
-      const response = await axios.post('/auth/login', credentials);
+      const response = await axios.post('/api/auth/login', credentials);
       const { token, user } = response.data;
 
       // Store token
@@ -77,6 +77,9 @@ export const AuthProvider = ({ children }) => {
 };
 
 export const useAuth = () => {
-  return useContext(AuthContext);
-
+  const context = useContext(AuthContext);
+  if (!context) {
+    throw new Error('useAuth must be used within an AuthProvider');
+  }
+  return context;
 }; 
