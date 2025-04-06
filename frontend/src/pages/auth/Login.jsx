@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import axios from '../../utils/axios';
 import { connectSocket } from '../../utils/socket';
 
@@ -95,6 +95,10 @@ export default function Login() {
             >
               Sign in
             </button>
+
+            <Link to="/register" className="text-sm text-gray-500 hover:text-gray-700">
+              Don't have an account? Register
+            </Link>
           </div>
         </form>
       </div>
