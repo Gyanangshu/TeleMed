@@ -71,6 +71,10 @@ const Dashboard = () => {
   useEffect(() => {
     const token = localStorage.getItem('token');
     if (token) {
+      // Force-set the userRole to ensure WebRTC works correctly
+      localStorage.setItem('userRole', 'doctor');
+      console.log('Setting userRole to doctor for WebRTC');
+      
       console.log('Connecting socket for real-time call updates...');
       const socket = connectSocket(token);
       

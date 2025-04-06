@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { connectSocket, getSocket } from '../../utils/socket';
+import { connectSocket, getSocket, disconnectSocket } from '../../utils/socket';
 import { createCall } from '../../services/callService';
 import { useAuth } from '../../contexts/AuthContext';
 
@@ -25,20 +25,18 @@ const Dashboard = () => {
   const { auth, logout } = useAuth();
 
   useEffect(() => {
+    // Force-set the userRole to ensure WebRTC works correctly
+    localStorage.setItem('userRole', 'operator');
+    console.log('Socket connected in operator dashboard');
+    
     const token = localStorage.getItem('token');
     if (token) {
-      const socket = connectSocket(token);
-
-      // Listen for socket connection events
-      socket.on('connect', () => {
-        console.log('Socket connected in operator dashboard');
-      });
-
-      socket.on('connect_error', (error) => {
-        console.error('Socket connection error in operator dashboard:', error);
-        setError('Connection error. Please try again.');
-      });
+      connectSocket(token);
     }
+
+    return () => {
+      disconnectSocket();
+    };
   }, []);
 
   const handleInputChange = (e) => {

@@ -117,11 +117,14 @@ const VideoCall = () => {
           localVideoRef.current.srcObject = stream;
         }
         
+        const userRole = localStorage.getItem('userRole');
+        console.log('Setting up call with role:', userRole);
+        
         cleanupFunction = setupWebRTC(
           call,
           { 
             userId: auth?.user?.id || localStorage.getItem('userId'),
-            role: localStorage.getItem('userRole'),
+            role: userRole,
             _id: localStorage.getItem('userId')
           },
           localVideoRef,

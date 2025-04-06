@@ -71,7 +71,8 @@ export const setupWebRTC = async (call, user, localVideoRef, remoteVideoRef, pee
         console.log('Generated ICE candidate:', event.candidate.type);
         socket.emit('ice-candidate', {
           callId: call._id,
-          candidate: event.candidate
+          candidate: event.candidate,
+          from: user.userId
         });
       } else {
         console.log('ICE gathering complete');
@@ -178,25 +179,34 @@ export const setupWebRTC = async (call, user, localVideoRef, remoteVideoRef, pee
     const operatorId = call.operator?._id?.toString() || call.operator?.id?.toString();
     const userId = user.userId?.toString();
     
-    // Force operator role to be initiator regardless of ID match
-    // This ensures at least one side will create the offer
+    // IMPORTANT: Force-check the role for initiator
+    // Log all relevant data to diagnose the issue
+    console.log('USER ROLE CHECK:', {
+      'role from user object': user.role,
+      'userRole from localStorage': localStorage.getItem('userRole'),
+      'operator ID': operatorId,
+      'user ID': userId
+    });
+    
+    // More direct approach - check for keyword "operator" anywhere in the role string
     let isInitiator = false;
     
-    if (user.role === 'operator') {
+    // Check role in multiple ways
+    const roleFromUser = String(user.role || '').toLowerCase();
+    const roleFromStorage = String(localStorage.getItem('userRole') || '').toLowerCase();
+    
+    if (roleFromUser.includes('operator') || roleFromStorage.includes('operator')) {
       isInitiator = true;
-      console.log('Setting as initiator because user is an operator');
+      console.log('Setting as initiator because user role contains "operator":', {
+        roleFromUser,
+        roleFromStorage
+      });
     } else if (operatorId === userId) {
       isInitiator = true;
       console.log('Setting as initiator because user ID matches operator ID');
     }
     
-    console.log('Is initiator check:', {
-      'operatorId': operatorId,
-      'userId': userId,
-      'user.role': user.role,
-      result: isInitiator
-    });
-    console.log('Is initiator:', isInitiator);
+    console.log('FINAL INITIATOR DECISION:', isInitiator);
 
     // Handle peer joined event
     socket.on('peer-joined', ({ userId, role }) => {
