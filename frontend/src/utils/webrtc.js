@@ -164,6 +164,20 @@ export const setupWebRTC = async (call, user, localVideoRef, remoteVideoRef, pee
       }
     });
 
+    // Determine if user is the call initiator
+    // This needs to be defined before peer-joined handler
+    const operatorId = call.operator?._id?.toString() || call.operator?.id?.toString();
+    const userId = user.userId?.toString();
+    const isInitiator = operatorId === userId || user.role === 'operator';
+    
+    console.log('Is initiator check:', {
+      'operatorId': operatorId,
+      'userId': userId,
+      'user.role': user.role,
+      result: isInitiator
+    });
+    console.log('Is initiator:', isInitiator);
+
     // Handle peer joined event
     socket.on('peer-joined', ({ userId, role }) => {
       console.log('Peer joined:', userId, role);
@@ -172,10 +186,6 @@ export const setupWebRTC = async (call, user, localVideoRef, remoteVideoRef, pee
         createAndSendOffer();
       }
     });
-
-    // Determine if user is the call initiator
-    const isInitiator = call.operator?._id === user?._id;
-    console.log('Is initiator:', isInitiator);
 
     const createAndSendOffer = async () => {
       try {
