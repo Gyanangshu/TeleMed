@@ -120,12 +120,18 @@ const VideoCall = () => {
         const userRole = localStorage.getItem('userRole');
         console.log('Setting up call with role:', userRole);
         
+        // Force-detected operator from URL - extremely reliable
+        const isOperator = window.location.pathname.includes('/operator') || 
+                          userRole === 'operator';
+        console.log('Force-detected operator from URL:', isOperator);
+        
         cleanupFunction = setupWebRTC(
           call,
           { 
             userId: auth?.user?.id || localStorage.getItem('userId'),
             role: userRole,
-            _id: localStorage.getItem('userId')
+            _id: localStorage.getItem('userId'),
+            isOperator: isOperator // Direct flag for initiator logic
           },
           localVideoRef,
           remoteVideoRef,

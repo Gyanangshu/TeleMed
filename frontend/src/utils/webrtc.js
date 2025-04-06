@@ -165,48 +165,38 @@ export const setupWebRTC = async (call, user, localVideoRef, remoteVideoRef, pee
       }
     });
 
-    // Determine if user is the call initiator
-    // This needs to be defined before peer-joined handler
-    console.log('Call data for initiator check:', {
-      call: {
-        _id: call._id,
-        operator: call.operator,
-        status: call.status
-      },
-      user: user
-    });
+    // IMPORTANT: FIXED APPROACH - Use the URL path to determine initiator
+    // If we're on the operator path, we're the initiator
+    console.log('CURRENT URL PATH:', window.location.pathname);
     
-    const operatorId = call.operator?._id?.toString() || call.operator?.id?.toString();
-    const userId = user.userId?.toString();
+    // Direct flag check - most reliable
+    let isInitiator = !!user.isOperator;
     
-    // IMPORTANT: Force-check the role for initiator
-    // Log all relevant data to diagnose the issue
-    console.log('USER ROLE CHECK:', {
-      'role from user object': user.role,
-      'userRole from localStorage': localStorage.getItem('userRole'),
-      'operator ID': operatorId,
-      'user ID': userId
-    });
-    
-    // More direct approach - check for keyword "operator" anywhere in the role string
-    let isInitiator = false;
-    
-    // Check role in multiple ways
-    const roleFromUser = String(user.role || '').toLowerCase();
-    const roleFromStorage = String(localStorage.getItem('userRole') || '').toLowerCase();
-    
-    if (roleFromUser.includes('operator') || roleFromStorage.includes('operator')) {
-      isInitiator = true;
-      console.log('Setting as initiator because user role contains "operator":', {
-        roleFromUser,
-        roleFromStorage
-      });
-    } else if (operatorId === userId) {
-      isInitiator = true;
-      console.log('Setting as initiator because user ID matches operator ID');
+    // Fallback: URL-based detection
+    if (!isInitiator) {
+      isInitiator = window.location.pathname.includes('/operator/') || 
+                   window.location.pathname.startsWith('/operator');
+    }
+                     
+    // Additional fallback with roles if needed
+    if (!isInitiator) {
+      const roleFromUser = String(user.role || '').toLowerCase();
+      const roleFromStorage = String(localStorage.getItem('userRole') || '').toLowerCase();
+      
+      if (roleFromUser.includes('operator') || roleFromStorage.includes('operator')) {
+        isInitiator = true;
+        console.log('Setting as initiator based on role', roleFromUser, roleFromStorage);
+      }
     }
     
-    console.log('FINAL INITIATOR DECISION:', isInitiator);
+    // Debug all flags
+    console.log('**************** INITIATOR DECISION ****************');
+    console.log('IS INITIATOR:', isInitiator);
+    console.log('DIRECT FLAG:', !!user.isOperator);
+    console.log('URL PATH:', window.location.pathname);
+    console.log('USER ROLE:', user.role);
+    console.log('LOCALSTORAGE ROLE:', localStorage.getItem('userRole'));
+    console.log('*****************************************************');
 
     // Handle peer joined event
     socket.on('peer-joined', ({ userId, role }) => {
@@ -285,6 +275,19 @@ export const setupWebRTC = async (call, user, localVideoRef, remoteVideoRef, pee
           onError?.(err);
         }
       });
+    }
+
+    // Create an offer/answer regardless of initiator after a timeout
+    // This ensures at least one side tries to initiate if normal flow fails
+    if (isInitiator) {
+      // Set a fallback timer to create offer if peer-joined event doesn't happen
+      setTimeout(() => {
+        if (peerConnection.signalingState === 'stable' && 
+            peerConnection.connectionState !== 'connected') {
+          console.log('FALLBACK: Creating offer as operator after timeout');
+          createAndSendOffer();
+        }
+      }, 5000); // 5 second timeout
     }
 
     // Handle peer disconnection
