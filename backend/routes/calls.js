@@ -202,9 +202,15 @@ module.exports = (io) => {
   });
 
   // End call (for doctors and operators)
-  router.post('/:id/end', async (req, res) => {
+  router.post('/:id/end', auth, async (req, res) => {
     try {
       const { id } = req.params;
+      
+      // Log the entire request body for debugging
+      console.log('End call request body:', req.body);
+      console.log('User from auth middleware:', req.user);
+      
+      const { doctorAdvice, referred } = req.body;
       
       // Check if ID is valid
       if (!id || id === 'undefined') {
@@ -221,22 +227,42 @@ module.exports = (io) => {
         return res.status(404).json({ message: 'Call not found' });
       }
 
-      // // Check if user has permission to end this call
+       // // Check if user has permission to end this call
       // if (req.user.role === 'operator' && call.operator.toString() !== req.user.userId) {
       //   return res.status(403).json({ message: 'Not authorized to end this call' });
       // }
+      console.log('Original call data before update:', call);
 
-      // // If user is a doctor, check if they are assigned to this call
-      // if (req.user.role === 'doctor' && call.doctor?.toString() !== req.user.userId) {
-      //   return res.status(403).json({ message: 'Not authorized to end this call' });
-      // }
+      // Authorization is now simpler - we're not checking roles since the auth middleware 
+      // ensures the user is authenticated
 
       // Update call status
       call.status = 'completed';
       call.endTime = new Date();
+      
+      // Update doctor's advice if provided
+      if (doctorAdvice !== undefined) {
+        console.log('Updating doctor advice:', doctorAdvice);
+        call.doctorAdvice = doctorAdvice;
+      }
 
-      await call.save();
-      res.json(call);
+      // Update referral status if provided
+      if (referred !== undefined) {
+        console.log('Updating referral status:', referred, typeof referred);
+        call.referred = referred;
+      }
+
+      console.log('Call data after updates, before saving:', call);
+
+      try {
+        // Save with explicit error handling
+        const savedCall = await call.save();
+        console.log('Call updated successfully:', savedCall);
+        res.json(savedCall);
+      } catch (saveError) {
+        console.error('Error saving call:', saveError);
+        return res.status(500).json({ message: 'Error saving call data', error: saveError.message });
+      }
     } catch (err) {
       console.error('Error ending call:', err);
       res.status(500).json({ message: 'Server error' });

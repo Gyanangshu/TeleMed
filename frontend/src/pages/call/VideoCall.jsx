@@ -4,6 +4,8 @@ import { connectSocket, disconnectSocket, getSocket, SOCKET_EVENTS, isSocketConn
 import { setupWebRTC } from '../../utils/webrtc';
 import { getCallById, endCall } from '../../services/callService';
 import { useAuth } from '../../contexts/AuthContext';
+import { RxHamburgerMenu } from "react-icons/rx";
+import { RxCross1 } from "react-icons/rx";
 
 const VideoCall = () => {
   const { callId } = useParams();
@@ -15,6 +17,10 @@ const VideoCall = () => {
   const [socketConnected, setSocketConnected] = useState(isSocketConnected());
   const [webRTCInitialized, setWebRTCInitialized] = useState(false);
   const [isEndingCall, setIsEndingCall] = useState(false);
+  const [isSidePanelOpen, setIsSidePanelOpen] = useState(false);
+  const [doctorAdvice, setDoctorAdvice] = useState('');
+  const [isReferred, setIsReferred] = useState(false);
+  const [isDoctor, setIsDoctor] = useState(false);
   const localVideoRef = useRef(null);
   const remoteVideoRef = useRef(null);
   const peerConnectionRef = useRef(null);
@@ -64,6 +70,18 @@ const VideoCall = () => {
           throw new Error('Call not found');
         }
         setCall(callData);
+        // Initialize doctor advice and referred status from call data
+        if (callData.doctorAdvice) {
+          setDoctorAdvice(callData.doctorAdvice);
+        }
+        if (callData.referred !== undefined) {
+          setIsReferred(callData.referred);
+        }
+        
+        // Check if the current user is a doctor
+        const userRole = localStorage.getItem('userRole');
+        setIsDoctor(userRole === 'doctor');
+        console.log('User role:', userRole, 'Is doctor:', userRole === 'doctor');
       } catch (err) {
         console.error('Error fetching call details:', err);
         setError(err.response?.data?.message || err.message || 'Failed to fetch call details');
@@ -112,22 +130,22 @@ const VideoCall = () => {
         const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
         localStream = stream;
         console.log('Got media stream:', stream);
-        
+
         if (localVideoRef.current) {
           localVideoRef.current.srcObject = stream;
         }
-        
+
         const userRole = localStorage.getItem('userRole');
         console.log('Setting up call with role:', userRole);
-        
+
         // Force-detected operator from URL - extremely reliable
-        const isOperator = window.location.pathname.includes('/operator') || 
-                          userRole === 'operator';
+        const isOperator = window.location.pathname.includes('/operator') ||
+          userRole === 'operator';
         console.log('Force-detected operator from URL:', isOperator);
-        
+
         cleanupFunction = setupWebRTC(
           call,
-          { 
+          {
             userId: auth?.user?.id || localStorage.getItem('userId'),
             role: userRole,
             _id: localStorage.getItem('userId'),
@@ -145,7 +163,7 @@ const VideoCall = () => {
             }
           }
         );
-        
+
         setWebRTCInitialized(true);
         console.log('WebRTC setup completed successfully');
       } catch (err) {
@@ -184,7 +202,7 @@ const VideoCall = () => {
     try {
       setIsEndingCall(true);
       console.log('Ending call...');
-      
+
       // Stop all tracks in the local stream
       if (localVideoRef.current?.srcObject) {
         console.log('Stopping local tracks...');
@@ -194,7 +212,7 @@ const VideoCall = () => {
         });
         localVideoRef.current.srcObject = null;
       }
-      
+
       // Stop all tracks in the remote stream
       if (remoteVideoRef.current?.srcObject) {
         console.log('Stopping remote tracks...');
@@ -204,7 +222,7 @@ const VideoCall = () => {
         });
         remoteVideoRef.current.srcObject = null;
       }
-      
+
       // Close peer connection
       if (peerConnectionRef.current) {
         console.log('Closing peer connection...');
@@ -219,9 +237,23 @@ const VideoCall = () => {
         socket.emit('call-ended', { callId });
       }
 
-      // Call the backend API to update call status
-      console.log('Updating call status in backend...');
-      await endCall(callId);
+      // Only include doctorAdvice and referred if the user is a doctor
+      const callUpdateData = isDoctor 
+        ? {
+            doctorAdvice: doctorAdvice || '',
+            referred: Boolean(isReferred)
+          }
+        : {}; // Empty object for operators
+      
+      console.log('Call update payload:', JSON.stringify(callUpdateData));
+      console.log('Is doctor:', isDoctor);
+      if (isDoctor) {
+        console.log('Including doctor advice:', doctorAdvice);
+        console.log('Including referred status:', isReferred, typeof isReferred);
+      }
+      
+      const response = await endCall(callId, callUpdateData);
+      console.log('Call updated successfully, response:', response);
 
       // Disconnect socket
       console.log('Disconnecting socket...');
@@ -233,13 +265,15 @@ const VideoCall = () => {
       navigate(`/${userRole}`);
     } catch (err) {
       console.error('Error ending call:', err);
-      
+      console.error('Error status:', err.response?.status);
+      console.error('Error data:', err.response?.data);
+
       // Handle 403 error specifically
       if (err.response?.status === 403) {
         setError('You are not authorized to end this call. Please contact support.');
         return; // Don't navigate if unauthorized
       }
-      
+
       // Handle token expiration
       if (err.response?.status === 401) {
         setError('Your session has expired. Please log in again.');
@@ -251,7 +285,7 @@ const VideoCall = () => {
         navigate('/');
         return;
       }
-      
+
       setError('Failed to end call properly');
       // Even if the API call fails, ensure we clean up the media
       if (localVideoRef.current?.srcObject) {
@@ -274,7 +308,7 @@ const VideoCall = () => {
       socket.on('call-ended', ({ callId: endedCallId }) => {
         if (endedCallId === callId) {
           console.log('Call ended by other participant');
-          
+
           // Stop video streams
           if (localVideoRef.current?.srcObject) {
             localVideoRef.current.srcObject.getTracks().forEach(track => track.stop());
@@ -284,13 +318,13 @@ const VideoCall = () => {
             remoteVideoRef.current.srcObject.getTracks().forEach(track => track.stop());
             remoteVideoRef.current.srcObject = null;
           }
-          
+
           // Close peer connection
           if (peerConnectionRef.current) {
             peerConnectionRef.current.close();
             peerConnectionRef.current = null;
           }
-          
+
           // Navigate to dashboard
           const userRole = localStorage.getItem('userRole');
           if (!userRole) {
@@ -357,13 +391,89 @@ const VideoCall = () => {
     <div className="h-screen w-full bg-gray-900 flex items-center justify-center relative">
       <div className="w-full h-full relative">
         {/* Remote Video */}
-        <div className="w-full h-full">
+        <div className="w-full h-full relative">
           <video
             ref={remoteVideoRef}
             autoPlay
             playsInline
             className="w-full h-full object-cover"
           />
+          {/* Only show side panel button for doctors */}
+          {isDoctor && (
+            <div className='absolute top-4 left-4 z-20'>
+              <button 
+                onClick={() => setIsSidePanelOpen(!isSidePanelOpen)} 
+                className="text-white bg-gray-800/50 p-2 rounded-full hover:bg-gray-700/70 transition-all duration-300"
+              >
+                {isSidePanelOpen ? (
+                  <RxCross1 className='text-xl' />
+                ) : (
+                  <RxHamburgerMenu className='text-xl' />
+                )}
+              </button>
+            </div>
+          )}
+          
+          {/* Side Panel - only for doctors */}
+          {isDoctor && (
+            <div 
+              className={`absolute top-0 left-0 h-full bg-white z-10 transition-all duration-300 ease-in-out ${
+                isSidePanelOpen ? 'w-1/3 opacity-100' : 'w-0 opacity-0'
+              } overflow-hidden`}
+            >
+              <div className="px-6 pb-6 pt-20 w-full">
+                <h2 className="text-2xl font-medium text-gray-800 mb-4">Patient Details</h2>
+                
+                {call && (
+                  <div className="space-y-4">
+                    <div>
+                      {/* <h3 className="text-lg font-medium text-gray-700">Patient</h3> */}
+                      <p className="">Name: {call.patient?.name || 'Unknown'}</p>
+                      <p className="">Age: {call.patient?.age}</p>
+                      <p className="">Sex: {call.patient?.sex}</p>
+                    </div>
+                    
+                    {call.patient?.symptoms && (
+                      <div>
+                        <h3 className="text-lg font-medium text-gray-700">Symptoms</h3>
+                        <p className="text-gray-600">{call.patient.symptoms}</p>
+                      </div>
+                    )}
+                    
+                    {/* Doctor's Advice Section */}
+                    <div className="mt-6">
+                      <h3 className="text-lg font-medium text-gray-700 mb-2">Doctor's Advice</h3>
+                      <textarea
+                        value={doctorAdvice}
+                        onChange={(e) => setDoctorAdvice(e.target.value)}
+                        placeholder="Write your advice for the patient here..."
+                        className="w-full h-40 p-3 border border-gray-300 rounded-md outline-blue-500 resize-none"
+                      ></textarea>
+                      <p className="text-sm text-gray-500 mt-1">
+                        This advice will be saved when you end the call.
+                      </p>
+                    </div>
+                    
+                    {/* Referral Status Section */}
+                    <div className="mt-4">
+                      <h3 className="text-lg font-medium text-gray-700 mb-2">Referral Status</h3>
+                      <select
+                        value={isReferred.toString()}
+                        onChange={(e) => setIsReferred(e.target.value === "true")}
+                        className="w-full p-3 border border-gray-300 rounded-md outline-blue-500"
+                      >
+                        <option value="false">Not Referred</option>
+                        <option value="true">Referred to Hospital</option>
+                      </select>
+                      <p className="text-sm text-gray-500 mt-1">
+                        Select whether the patient needs to be referred to a hospital for further treatment.
+                      </p>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Local Video */}

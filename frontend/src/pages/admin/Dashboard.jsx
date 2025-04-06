@@ -26,6 +26,8 @@ export default function AdminDashboard() {
     }
   };
 
+  console.log("calls data: ", calls);
+
   const handleLogout = () => {
     logout();
     navigate('/');
