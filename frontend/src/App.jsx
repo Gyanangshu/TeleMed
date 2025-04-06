@@ -5,6 +5,7 @@ import Login from './pages/auth/Login';
 import Register from './pages/auth/Register';
 import DoctorDashboard from './pages/doctor/Dashboard';
 import OperatorDashboard from './pages/operator/Dashboard';
+import AdminDashboard from './pages/admin/Dashboard';
 import VideoCall from './pages/call/VideoCall';
 
 function App() {
