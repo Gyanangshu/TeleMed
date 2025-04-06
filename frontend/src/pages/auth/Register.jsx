@@ -25,7 +25,7 @@ export default function Register() {
       const response = await axios.post('/auth/register', formData);
       localStorage.setItem('token', response.data.token);
       localStorage.setItem('user', JSON.stringify(response.data.user));
-      
+
       // Redirect based on role
       switch (response.data.user.role) {
         case 'operator':
@@ -49,7 +49,7 @@ export default function Register() {
     <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-md w-full space-y-8">
         <div>
-          <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
+          <h2 className="mt-6 text-center text-4xl font-semibold text-gray-900">
             Create your account
           </h2>
         </div>
@@ -59,9 +59,9 @@ export default function Register() {
               <div className="text-sm text-red-700">{error}</div>
             </div>
           )}
-          <div className="rounded-md shadow-sm -space-y-px">
-            <div>
-              <label htmlFor="name" className="sr-only">
+          <div className="flex flex-col gap-3 ">
+            <div className="flex flex-col gap-1">
+              <label htmlFor="name" className="text-sm font-medium text-gray-700">
                 Name
               </label>
               <input
@@ -69,14 +69,14 @@ export default function Register() {
                 name="name"
                 type="text"
                 required
-                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
+                className="border border-gray-300 outline-blue-500 rounded-md p-2"
                 placeholder="Full Name"
                 value={formData.name}
                 onChange={handleChange}
               />
             </div>
-            <div>
-              <label htmlFor="email" className="sr-only">
+            <div className="flex flex-col gap-1">
+              <label htmlFor="email" className="text-sm font-medium text-gray-700">
                 Email address
               </label>
               <input
@@ -84,14 +84,14 @@ export default function Register() {
                 name="email"
                 type="email"
                 required
-                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
+                className="border border-gray-300 outline-blue-500 rounded-md p-2"
                 placeholder="Email address"
                 value={formData.email}
                 onChange={handleChange}
               />
             </div>
-            <div>
-              <label htmlFor="password" className="sr-only">
+            <div className="flex flex-col gap-1">
+              <label htmlFor="password" className="text-sm font-medium text-gray-700">
                 Password
               </label>
               <input
@@ -99,21 +99,21 @@ export default function Register() {
                 name="password"
                 type="password"
                 required
-                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
+                className="border border-gray-300 outline-blue-500 rounded-md p-2"
                 placeholder="Password"
                 value={formData.password}
                 onChange={handleChange}
               />
             </div>
-            <div>
-              <label htmlFor="role" className="sr-only">
+            <div className="flex flex-col gap-1">
+              <label htmlFor="role" className="text-sm font-medium text-gray-700">
                 Role
               </label>
               <select
                 id="role"
                 name="role"
                 required
-                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-b-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
+                className="border border-gray-300 outline-blue-500 rounded-md p-2"
                 value={formData.role}
                 onChange={handleChange}
               >
@@ -127,20 +127,22 @@ export default function Register() {
           <div>
             <button
               type="submit"
-              className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+              className="group relative w-full flex justify-center py-2 px-4 border border-transparent font-medium rounded-md text-white bg-indigo-500 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
             >
               Register
             </button>
+
+            <div className="text-sm text-center mt-2">
+              <a
+                href="/login"
+                className="font-medium"
+              >
+                Already have an account? <span className='text-red-500'>Login</span>
+              </a>
+            </div>
           </div>
         </form>
-        <div className="text-sm text-center">
-          <a
-            href="/login"
-            className="font-medium"
-          >
-            Already have an account? <span className='text-red-500'>Login</span>
-          </a>
-        </div>
+
       </div>
     </div>
   );
