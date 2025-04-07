@@ -66,6 +66,13 @@ export const generateConsultationReport = (call, patient) => {
   doc.text(`End Time: ${call.endTime ? new Date(call.endTime).toLocaleString() : 'Not ended'}`, margin, yPos);
   yPos += 15;
 
+  doc.setFontSize(16);
+  doc.text('DOCTOR NAME', margin, yPos);
+  yPos += 10;
+  doc.setFontSize(12);
+  doc.text(`Dr. ${call?.doctor?.name}`, margin, yPos);
+  yPos += 15;
+
   // Doctor's Notes
   if (call.doctorAdvice) {
     doc.setFontSize(16);
