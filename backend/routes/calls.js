@@ -86,7 +86,7 @@ module.exports = (io) => {
   router.get('/', auth, authorize('admin'), async (req, res) => {
     try {
       const calls = await Call.find()
-        .populate('patient', 'name phoneNumber age sex')
+        .populate('patient', 'name phoneNumber age sex height weight oxygenLevel bloodPressure symptoms')
         .populate('operator', 'name')
         .populate('doctor', 'name')
         .sort({ startTime: -1 });

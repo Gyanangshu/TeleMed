@@ -2,14 +2,22 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from '../../utils/axios';
 import { useAuth } from '../../contexts/AuthContext';
+import { generateConsultationReport } from '../../utils/reportGenerator';
 
 export default function AdminDashboard() {
   const [calls, setCalls] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [filter, setFilter] = useState('all'); // all, ongoing, completed
+  const [selectedCall, setSelectedCall] = useState(null);
+  const [showReportPreview, setShowReportPreview] = useState(false);
+  const [reportContent, setReportContent] = useState('');
   const navigate = useNavigate();
   const { logout } = useAuth();
+
+  console.log("selectedCall: ", selectedCall)
+  console.log("showReportPreview: ", showReportPreview)
+  console.log("reportContent: ", reportContent)
 
   useEffect(() => {
     fetchCalls();
@@ -17,8 +25,18 @@ export default function AdminDashboard() {
 
   const fetchCalls = async () => {
     try {
-      const response = await axios.get(`/calls?status=${filter}`);
-      setCalls(response.data);
+      const response = await axios.get('/calls');
+      let filteredCalls = response.data;
+
+      if (filter === 'referred') {
+        filteredCalls = response.data.filter(call => call.referred === true);
+      } else if (filter === 'notreferred') {
+        filteredCalls = response.data.filter(call => call.referred === false);
+      } else if (filter !== 'all') {
+        filteredCalls = response.data.filter(call => call.status === filter);
+      }
+
+      setCalls(filteredCalls);
     } catch (err) {
       setError('Failed to fetch calls');
     } finally {
@@ -54,6 +72,37 @@ export default function AdminDashboard() {
     );
   }
 
+  const handleGenerateReport = (call) => {
+    setSelectedCall(call);
+    const doc = generateConsultationReport(call, call.patient);
+    setReportContent(doc);
+    setShowReportPreview(true);
+  };
+
+  const handleDownloadReport = () => {
+    const doc = reportContent;
+    doc.save(`consultation-report-${selectedCall.patient.name}-${new Date().toISOString().split('T')[0]}.pdf`);
+  };
+
+  const handlePrintReport = () => {
+    console.log("reportContent: ", reportContent)
+    const doc = reportContent;
+    doc.autoPrint();
+
+    const blob = doc.output('blob');
+    const blobUrl = URL.createObjectURL(blob);
+
+    const printWindow = window.open(blobUrl, '_blank');
+    if (printWindow) {
+      // Optional: clean up the object URL after a delay
+      setTimeout(() => {
+        URL.revokeObjectURL(blobUrl);
+      }, 10000);
+    } else {
+      alert('Please allow popups for this site to print the report.');
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gray-100">
       <div className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
@@ -61,15 +110,7 @@ export default function AdminDashboard() {
           <div className="flex justify-between items-center mb-6">
             <h1 className="text-3xl font-bold text-gray-900">Admin Dashboard</h1>
             <div className="flex items-center gap-4">
-              <select
-                value={filter}
-                onChange={(e) => setFilter(e.target.value)}
-                className="block pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md"
-              >
-                <option value="all">All Calls</option>
-                <option value="ongoing">Ongoing</option>
-                <option value="completed">Completed</option>
-              </select>
+
               <button
                 onClick={handleLogout}
                 className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-md flex items-center gap-2"
@@ -88,58 +129,136 @@ export default function AdminDashboard() {
             </div>
           )}
 
+          <select
+            value={filter}
+            onChange={(e) => setFilter(e.target.value)}
+            className="block pl-3 pr-10 py-2 text-base border-2 border-gray-300 focus:outline-none sm:text-sm rounded-md mt-12 cursor-pointer"
+          >
+            <option value="all">All Calls</option>
+            <option value="ongoing">Ongoing</option>
+            <option value="completed">Completed</option>
+            <option value="cancelled">Cancelled</option>
+            <option value="referred">Referred: Yes</option>
+            <option value="notreferred">Referred: No</option>
+          </select>
+
           <div className="mt-6">
             {calls.length === 0 ? (
               <div className="bg-white rounded-lg shadow p-6 text-center text-gray-500">
                 No calls found
               </div>
             ) : (
-              <div className="bg-white shadow overflow-hidden sm:rounded-lg">
-                <ul className="divide-y divide-gray-200">
-                  {calls.map((call) => (
-                    <li key={call._id}>
-                      <div className="px-4 py-4 sm:px-6">
-                        <div className="flex items-center justify-between">
-                          <div className="flex-1 min-w-0">
-                            <div className="flex items-center">
-                              <p className="text-sm font-medium text-indigo-600 truncate">
-                                {call.patient.name}
-                              </p>
-                              <span className={`ml-2 px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${getStatusBadgeColor(call.status)}`}>
-                                {call.status}
-                              </span>
-                            </div>
-                            <div className="mt-2 flex">
-                              <div className="flex items-center text-sm text-gray-500">
-                                <span>Operator: {call.operator.name}</span>
-                                {call.doctor && (
-                                  <span className="ml-4">Doctor: {call.doctor.name}</span>
-                                )}
-                              </div>
-                            </div>
-                            <div className="mt-2 text-sm text-gray-500">
-                              <p>Patient Age: {call.patient.age} | Sex: {call.patient.sex}</p>
-                              <p>Start Time: {new Date(call.startTime).toLocaleString()}</p>
-                              {call.endTime && (
-                                <p>End Time: {new Date(call.endTime).toLocaleString()}</p>
-                              )}
-                            </div>
-                            {call.consultationCompleted && (
-                              <div className="mt-2">
-                                <p className="text-sm text-gray-500">
-                                  Consultation Completed: {call.consultationCompleted ? 'Yes' : 'No'}
-                                </p>
-                                <p className="text-sm text-gray-500">
-                                  Referred: {call.referred ? 'Yes' : 'No'}
-                                </p>
-                              </div>
-                            )}
-                          </div>
-                        </div>
-                      </div>
-                    </li>
-                  ))}
-                </ul>
+              <>
+
+                <div className="bg-white shadow border border-gray-400 rounded-lg mt-4 overflow-x-auto">
+                  <table className="w-full border-collapse">
+                    <thead className='w-full bg-gray-50' >
+                      <tr>
+                        <th className="py-2 px-4 border-b border-gray-300 text-left border-r">
+                          Patient
+                        </th>
+                        <th className="py-2 px-4 border-b border-gray-300 text-left border-r">
+                          Age
+                        </th>
+                        <th className="py-2 px-4 border-b border-gray-300 text-left border-r">
+                          Sex
+                        </th>
+                        <th className="py-2 px-4 border-b border-gray-300 text-left border-r">
+                          Date & Time
+                        </th>
+                        <th className="py-2 px-4 border-b border-gray-300 text-left border-r">
+                          Referred
+                        </th>
+                        <th className="py-2 px-4 border-b border-gray-300 text-left border-r">
+                          Operator
+                        </th>
+                        <th className="py-2 px-4 border-b border-gray-300 text-left border-r">
+                          Action
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody className='w-full'>
+                      {calls.map((call) => (
+                        <tr key={call._id}>
+                          <td className="py-2 px-4 border-b border-gray-300">
+                            {call.patient.name}
+                          </td>
+                          <td className="py-2 px-4 border-b border-gray-300">
+                            {call.patient.age}
+                          </td>
+                          <td className="py-2 px-4 border-b border-gray-300">
+                            {call.patient.sex}
+                          </td>
+                          <td className="py-2 px-4 border-b border-gray-300">
+                            {new Date(call.startTime).toLocaleString('en-GB', {
+                              day: '2-digit',
+                              month: '2-digit',
+                              year: 'numeric',
+                              hour: '2-digit',
+                              minute: '2-digit',
+                              second: '2-digit',
+                              hour12: true,
+                            })}
+                          </td>
+                          <td className="py-2 px-4 border-b border-gray-300">
+                            {call.referred ? 'Yes' : 'No'}
+                          </td>
+                          <td className="py-2 px-4 border-b border-gray-300">
+                            {call.operator.name}
+                          </td>
+                          <td className="py-2 pl-4 border-b border-gray-300">
+                            <button className='bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 transition-colors' onClick={() => handleGenerateReport(call)}>
+                              View Report
+                            </button>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+
+                </div>
+              </>
+            )}
+
+            {/* Report Preview Modal */}
+            {showReportPreview && (
+              <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4">
+                <div className="bg-white rounded-lg shadow-xl max-w-4xl w-full max-h-[86vh] overflow-y-auto">
+                  <div className="p-6">
+                    <div className="flex justify-between items-center mb-4">
+                      <h3 className="text-xl font-semibold">Consultation Report Preview</h3>
+                      <button
+                        onClick={() => setShowReportPreview(false)}
+                        className="text-gray-500 hover:text-gray-700"
+                      >
+                        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                      </button>
+                    </div>
+                    <div>
+                      <iframe
+                        src={reportContent.output('datauristring')}
+                        className="w-full h-[60vh] border-0"
+                        title="PDF Preview"
+                      />
+                    </div>
+                    <div className="flex justify-end space-x-4 mt-6">
+                      <button
+                        onClick={handlePrintReport}
+                        className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors"
+                      >
+                        Print Report
+                      </button>
+                      <button
+                        onClick={handleDownloadReport}
+                        className="bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700 transition-colors"
+                      >
+                        Download PDF
+                      </button>
+                    </div>
+                  </div>
+                </div>
               </div>
             )}
           </div>

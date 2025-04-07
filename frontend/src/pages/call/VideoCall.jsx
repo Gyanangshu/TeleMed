@@ -241,7 +241,10 @@ const VideoCall = () => {
       const callUpdateData = isDoctor 
         ? {
             doctorAdvice: doctorAdvice || '',
-            referred: Boolean(isReferred)
+            referred: Boolean(isReferred),
+            doctor: {
+              name: call?.doctor?.name || ''
+            }
           }
         : {}; // Empty object for operators
       
@@ -250,6 +253,7 @@ const VideoCall = () => {
       if (isDoctor) {
         console.log('Including doctor advice:', doctorAdvice);
         console.log('Including referred status:', isReferred, typeof isReferred);
+        console.log('Including doctor name:', call?.doctor?.name);
       }
       
       const response = await endCall(callId, callUpdateData);
@@ -417,9 +421,9 @@ const VideoCall = () => {
           {/* Side Panel - only for doctors */}
           {isDoctor && (
             <div 
-              className={`absolute top-0 left-0 h-full bg-white z-10 transition-all duration-300 ease-in-out overflow-x-scroll ${
+              className={`absolute top-0 left-0 h-full bg-white z-10 transition-all duration-300 ease-in-out overflow-y-scroll ${
                 isSidePanelOpen ? 'w-1/3 opacity-100' : 'w-0 opacity-0'
-              } overflow-hidden`}
+              } `}
             >
               <div className="px-6 pb-6 pt-20 w-full">
                 <h2 className="text-2xl font-medium text-gray-800 mb-4">Patient Details</h2>
