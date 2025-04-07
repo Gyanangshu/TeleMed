@@ -91,6 +91,15 @@ module.exports = (io) => {
         .populate('doctor', 'name')
         .sort({ startTime: -1 });
 
+      // Log the first call to verify doctor data
+      if (calls.length > 0) {
+        console.log('Sample call data with doctor:', {
+          callId: calls[0]._id,
+          doctor: calls[0].doctor,
+          status: calls[0].status
+        });
+      }
+
       res.json(calls);
     } catch (err) {
       console.error(err);
@@ -250,6 +259,12 @@ module.exports = (io) => {
       if (referred !== undefined) {
         console.log('Updating referral status:', referred, typeof referred);
         call.referred = referred;
+      }
+
+      // Set the doctor field if the user is a doctor
+      if (req.user.role === 'doctor') {
+        console.log('Setting doctor field:', req.user.userId);
+        call.doctor = req.user.userId;
       }
 
       console.log('Call data after updates, before saving:', call);
