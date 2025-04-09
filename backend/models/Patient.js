@@ -32,6 +32,14 @@ const patientSchema = new mongoose.Schema({
     type: Number,
     required: true
   },
+  temperature: {
+    type: Number,
+    required: true
+  },
+  pulse: {
+    type: Number,
+    required: true
+  },
   bloodPressure: {
     systolic: {
       type: Number,

@@ -42,6 +42,10 @@ export const generateConsultationReport = (call, patient) => {
   yPos += 7;
   doc.text(`SpO2: ${patient.oxygenLevel}%`, margin, yPos);
   yPos += 7;
+  doc.text(`Temperature: ${patient.temperature}°C`, margin, yPos);
+  yPos += 7;
+  doc.text(`Pulse: ${patient.pulse} BPM`, margin, yPos);
+  yPos += 7;
   doc.text(`Blood Pressure: ${patient.bloodPressure.systolic}/${patient.bloodPressure.diastolic}`, margin, yPos);
   yPos += 15;
 

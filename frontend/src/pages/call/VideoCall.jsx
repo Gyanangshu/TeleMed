@@ -435,6 +435,12 @@ const VideoCall = () => {
                       <p className="">Name: {call.patient?.name || 'Unknown'}</p>
                       <p className="">Age: {call.patient?.age}</p>
                       <p className="">Sex: {call.patient?.sex}</p>
+                      <p className="">Height: {call.patient?.height}</p>
+                      <p className="">Weight: {call.patient?.weight}</p>
+                      <p className="">Oxygen Level: {call.patient?.oxygenLevel}</p>
+                      <p className="">Temperature: {call.patient?.temperature}</p>
+                      <p className="">Pulse: {call.patient?.pulse}</p>
+                      <p className="">Blood Pressure: {call.patient?.bloodPressure?.systolic}/{call.patient?.bloodPressure?.diastolic}</p>
                     </div>
                     
                     {call.patient?.symptoms && (

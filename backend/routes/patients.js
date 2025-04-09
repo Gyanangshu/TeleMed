@@ -14,6 +14,8 @@ router.post('/', auth, authorize('operator'), async (req, res) => {
       height,
       weight,
       oxygenLevel,
+      temperature,
+      pulse,
       bloodPressure,
       symptoms,
     } = req.body;
@@ -26,6 +28,8 @@ router.post('/', auth, authorize('operator'), async (req, res) => {
       height,
       weight,
       oxygenLevel,
+      temperature,
+      pulse,
       bloodPressure,
       symptoms,
     });

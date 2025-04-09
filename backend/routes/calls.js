@@ -44,7 +44,7 @@ module.exports = (io) => {
 
       // Populate the call with patient and operator data before emitting
       const populatedCall = await Call.findById(savedCall._id)
-        .populate('patient', 'name phoneNumber age sex symptoms')
+        .populate('patient', 'name phoneNumber age sex height weight oxygenLevel bloodPressure temperature pulse symptoms')
         .populate('operator', 'name');
       
       // Emit socket event to notify doctors of new pending call
@@ -86,7 +86,7 @@ module.exports = (io) => {
   router.get('/', auth, authorize('admin'), async (req, res) => {
     try {
       const calls = await Call.find()
-        .populate('patient', 'name phoneNumber age sex height weight oxygenLevel bloodPressure symptoms')
+        .populate('patient', 'name phoneNumber age sex height weight oxygenLevel bloodPressure temperature pulse symptoms')
         .populate('operator', 'name')
         .populate('doctor', 'name')
         .sort({ startTime: -1 });
@@ -111,7 +111,7 @@ module.exports = (io) => {
   router.get('/pending', auth, authorize('doctor'), async (req, res) => {
     try {
       const calls = await Call.find({ status: 'pending' })
-        .populate('patient', 'name phoneNumber age sex symptoms')
+        .populate('patient', 'name phoneNumber age sex height weight oxygenLevel bloodPressure temperature pulse symptoms')
         .populate('operator', 'name')
         .sort({ startTime: 1 });
 
@@ -142,7 +142,7 @@ module.exports = (io) => {
       
       console.log('Querying database for call...');
       const call = await Call.findById(id)
-        .populate('patient', 'name phoneNumber age sex symptoms')
+        .populate('patient', 'name phoneNumber age sex height weight oxygenLevel bloodPressure temperature pulse symptoms')
         .populate('operator', 'name')
         .populate('doctor', 'name');
 

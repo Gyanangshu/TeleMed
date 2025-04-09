@@ -14,6 +14,8 @@ const Dashboard = () => {
     height: '',
     weight: '',
     oxygenLevel: '',
+    temperature: '',
+    pulse: '',
     bloodPressure: {
       systolic: '',
       diastolic: ''
@@ -28,7 +30,7 @@ const Dashboard = () => {
     // Force-set the userRole to ensure WebRTC works correctly
     localStorage.setItem('userRole', 'operator');
     console.log('Socket connected in operator dashboard');
-    
+
     const token = localStorage.getItem('token');
     if (token) {
       connectSocket(token);
@@ -73,6 +75,8 @@ const Dashboard = () => {
         height: parseFloat(patientData.height),
         weight: parseFloat(patientData.weight),
         oxygenLevel: parseFloat(patientData.oxygenLevel),
+        temperature: parseFloat(patientData.temperature),
+        pulse: parseFloat(patientData.pulse),
         bloodPressure: {
           systolic: parseInt(patientData.bloodPressure.systolic),
           diastolic: parseInt(patientData.bloodPressure.diastolic)
@@ -181,6 +185,18 @@ const Dashboard = () => {
                   <option value="other">Other</option>
                 </select>
               </div>
+              <div className="flex flex-col gap-1">
+                <label htmlFor="temperature" className='text-sm font-medium text-gray-700'>Temperature (°C)</label>
+                <input
+                  type="number"
+                  id="temperature"
+                  name="temperature"
+                  value={patientData.temperature}
+                  onChange={handleInputChange}
+                  required
+                  className='border border-gray-300 outline-blue-500 rounded-md p-2'
+                />
+              </div>
             </div>
 
             <div className='flex flex-col gap-3'>
@@ -224,6 +240,19 @@ const Dashboard = () => {
               </div>
 
               <div className="flex flex-col gap-1">
+                <label htmlFor="pulse" className='text-sm font-medium text-gray-700'>Pulse (BPM)</label>
+                <input
+                  type="number"
+                  id="pulse"
+                  name="pulse"
+                  value={patientData.pulse}
+                  onChange={handleInputChange}
+                  required
+                  className='border border-gray-300 outline-blue-500 rounded-md p-2'
+                />
+              </div>
+
+              <div className="flex flex-col gap-1">
                 <label className='text-sm font-medium text-gray-700'>Blood Pressure (mmHg)</label>
                 <div className="flex items-center gap-2">
                   <input
@@ -233,7 +262,7 @@ const Dashboard = () => {
                     onChange={handleInputChange}
                     placeholder="Systolic"
                     required
-                    className='border border-gray-300 outline-blue-500 rounded-md p-2'
+                    className='border border-gray-300 outline-blue-500 rounded-md p-2 flex-grow'
                   />
                   <span>/</span>
                   <input
@@ -243,7 +272,7 @@ const Dashboard = () => {
                     onChange={handleInputChange}
                     placeholder="Diastolic"
                     required
-                    className='border border-gray-300 outline-blue-500 rounded-md p-2'
+                    className='border border-gray-300 outline-blue-500 rounded-md p-2 flex-grow'
                   />
                 </div>
               </div>
