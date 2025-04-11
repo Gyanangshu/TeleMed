@@ -178,19 +178,19 @@ export default function AdminDashboard() {
                       </tr>
                     </thead>
                     <tbody className='w-full'>
-                      {calls.map((call) => (
+                      {calls?.map((call) => (
                         <tr key={call._id}>
                           <td className="py-2 px-4 border-b border-gray-300">
-                            {call.patient.name}
+                            {call?.patient?.name}
                           </td>
                           <td className="py-2 px-4 border-b border-gray-300">
-                            {call.patient.age}
+                            {call?.patient?.age}
                           </td>
                           <td className="py-2 px-4 border-b border-gray-300">
-                            {call.patient.sex}
+                            {call?.patient?.sex}
                           </td>
                           <td className="py-2 px-4 border-b border-gray-300">
-                            {new Date(call.startTime).toLocaleString('en-GB', {
+                            {new Date(call?.startTime).toLocaleString('en-GB', {
                               day: '2-digit',
                               month: '2-digit',
                               year: 'numeric',
@@ -201,10 +201,10 @@ export default function AdminDashboard() {
                             })}
                           </td>
                           <td className="py-2 px-4 border-b border-gray-300">
-                            {call.referred ? 'Yes' : 'No'}
+                            {call?.referred ? 'Yes' : 'No'}
                           </td>
                           <td className="py-2 px-4 border-b border-gray-300">
-                            {call.operator.name}
+                            {call?.operator?.name}
                           </td>
                           <td className="py-2 pl-4 border-b border-gray-300">
                             <button className='bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 transition-colors' onClick={() => handleGenerateReport(call)}>
