@@ -14,7 +14,7 @@ const server = http.createServer(app);
 
 // CORS configuration
 const corsOptions = {
-  origin: ['https://telemedicine-sheetalchaya.netlify.app', 'http://localhost:5173', 'http://localhost:3000'],
+  origin: ['https://telemedicine-webapp.netlify.app', 'http://localhost:5173', 'http://localhost:3000'],
   methods: ['GET', 'POST', 'PUT', 'DELETE'],
   allowedHeaders: ['Content-Type', 'Authorization'],
   credentials: true
