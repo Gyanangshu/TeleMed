@@ -14,7 +14,15 @@ export const generateConsultationReport = (call, patient) => {
 
   // Date
   doc.setFontSize(12);
-  doc.text(`Date: ${new Date(call.createdAt).toLocaleString()}`, margin, yPos);
+  doc.text(`Date: ${new Date(call.createdAt).toLocaleString('en-IN', {
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+    hour12: true,
+  })}`, margin, yPos);
   yPos += 15;
 
   // Patient Information
@@ -46,7 +54,7 @@ export const generateConsultationReport = (call, patient) => {
   yPos += 7;
   doc.text(`Pulse: ${patient.pulse} BPM`, margin, yPos);
   yPos += 7;
-  doc.text(`Blood Pressure: ${patient.bloodPressure.systolic}/${patient.bloodPressure.diastolic}`, margin, yPos);
+  doc.text(`Blood Pressure: ${patient.bloodPressure.systolic}/${patient.bloodPressure.diastolic} mmHg`, margin, yPos);
   yPos += 15;
 
   // Symptoms
@@ -65,9 +73,26 @@ export const generateConsultationReport = (call, patient) => {
   doc.setFontSize(12);
   doc.text(`Status: ${call.status}`, margin, yPos);
   yPos += 7;
-  doc.text(`Start Time: ${call.startTime ? new Date(call.startTime).toLocaleString() : 'Not started'}`, margin, yPos);
+  doc.text(`Start Time: ${call.startTime ? new Date(call.startTime).toLocaleString('en-IN', {
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+    hour12: true,
+  }) :
+    'Not started'}`, margin, yPos);
   yPos += 7;
-  doc.text(`End Time: ${call.endTime ? new Date(call.endTime).toLocaleString() : 'Not ended'}`, margin, yPos);
+  doc.text(`End Time: ${call.endTime ? new Date(call.endTime).toLocaleString('en-IN', {
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+    hour12: true,
+  }) : 'Not ended'}`, margin, yPos);
   yPos += 15;
 
   doc.setFontSize(16);

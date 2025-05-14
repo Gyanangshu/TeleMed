@@ -190,7 +190,8 @@ export default function AdminDashboard() {
                             {call?.patient?.sex}
                           </td>
                           <td className="py-2 px-4 border-b border-gray-300">
-                            {new Date(call?.startTime).toLocaleString('en-GB', {
+                            {/* {new Date(call?.startTime).toLocaleString()} */}
+                            {new Date(call?.startTime).toLocaleString('en-IN', {
                               day: '2-digit',
                               month: '2-digit',
                               year: 'numeric',
