@@ -7,13 +7,16 @@ import DoctorDashboard from './pages/doctor/Dashboard';
 import OperatorDashboard from './pages/operator/Dashboard';
 import AdminDashboard from './pages/admin/Dashboard';
 import VideoCall from './pages/call/VideoCall';
+import Home from './pages/home/Home';
 
 function App() {
   return (
     <AuthProvider>
       <Routes>
         {/* Redirect root to login */}
-        <Route path="/" element={<Navigate to="/login" replace />} />
+        {/* <Route path="/" element={<Navigate to="/login" replace />} /> */}
+        
+        <Route path='/' element={<Home />}/>
         
         {/* Auth routes */}
         <Route path="/login" element={<Login />} />

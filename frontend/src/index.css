@@ -2,8 +2,156 @@
 @tailwind components;
 @tailwind utilities;
 
+
 @layer base {
   html {
     font-family: system-ui, sans-serif;
+  }
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 222.2 84% 4.9%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 222.2 84% 4.9%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 222.2 84% 4.9%;
+
+    --primary: 222.2 47.4% 11.2%;
+    --primary-foreground: 210 40% 98%;
+
+    --secondary: 210 40% 96.1%;
+    --secondary-foreground: 222.2 47.4% 11.2%;
+
+    --muted: 210 40% 96.1%;
+    --muted-foreground: 215.4 16.3% 46.9%;
+
+    --accent: 210 40% 96.1%;
+    --accent-foreground: 222.2 47.4% 11.2%;
+
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 214.3 31.8% 91.4%;
+    --input: 214.3 31.8% 91.4%;
+    --ring: 222.2 84% 4.9%;
+
+    --radius: 0.5rem;
+
+    --sidebar-background: 0 0% 98%;
+
+    --sidebar-foreground: 240 5.3% 26.1%;
+
+    --sidebar-primary: 240 5.9% 10%;
+
+    --sidebar-primary-foreground: 0 0% 98%;
+
+    --sidebar-accent: 240 4.8% 95.9%;
+
+    --sidebar-accent-foreground: 240 5.9% 10%;
+
+    --sidebar-border: 220 13% 91%;
+
+    --sidebar-ring: 217.2 91.2% 59.8%;
+
+    --medical-50: 211 100% 97%;
+    --medical-100: 210 96% 93%;
+    --medical-200: 208 94% 87%;
+    --medical-300: 206 89% 77%;
+    --medical-400: 204 80% 67%;
+    --medical-500: 201 75% 57%;
+    --medical-600: 198 70% 47%;
+    --medical-700: 195 75% 39%;
+    --medical-800: 192 81% 31%;
+    --medical-900: 189 85% 25%;
+
+    --emerald-50: 180 100% 97%;
+    --emerald-100: 178 94% 90%;
+    --emerald-200: 176 77% 80%;
+    --emerald-300: 174 68% 68%;
+    --emerald-400: 172 66% 56%;
+    --emerald-500: 170 70% 44%;
+    --emerald-600: 168 76% 36%;
+    --emerald-700: 166 81% 29%;
+    --emerald-800: 164 84% 23%;
+    --emerald-900: 162 87% 18%;
+  }
+
+  .dark {
+    --background: 222.2 84% 4.9%;
+    --foreground: 210 40% 98%;
+
+    --card: 222.2 84% 4.9%;
+    --card-foreground: 210 40% 98%;
+
+    --popover: 222.2 84% 4.9%;
+    --popover-foreground: 210 40% 98%;
+
+    --primary: 210 40% 98%;
+    --primary-foreground: 222.2 47.4% 11.2%;
+
+    --secondary: 217.2 32.6% 17.5%;
+    --secondary-foreground: 210 40% 98%;
+
+    --muted: 217.2 32.6% 17.5%;
+    --muted-foreground: 215 20.2% 65.1%;
+
+    --accent: 217.2 32.6% 17.5%;
+    --accent-foreground: 210 40% 98%;
+
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 217.2 32.6% 17.5%;
+    --input: 217.2 32.6% 17.5%;
+    --ring: 212.7 26.8% 83.9%;
+    --sidebar-background: 240 5.9% 10%;
+    --sidebar-foreground: 240 4.8% 95.9%;
+    --sidebar-primary: 224.3 76.3% 48%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 240 3.7% 15.9%;
+    --sidebar-accent-foreground: 240 4.8% 95.9%;
+    --sidebar-border: 240 3.7% 15.9%;
+    --sidebar-ring: 217.2 91.2% 59.8%;
+
+    --medical-50: 189 85% 25%;
+    --medical-100: 192 81% 31%;
+    --medical-200: 195 75% 39%;
+    --medical-300: 198 70% 47%;
+    --medical-400: 201 75% 57%;
+    --medical-500: 204 80% 67%;
+    --medical-600: 206 89% 77%;
+    --medical-700: 208 94% 87%;
+    --medical-800: 210 96% 93%;
+    --medical-900: 211 100% 97%;
+
+    --emerald-50: 162 87% 18%;
+    --emerald-100: 164 84% 23%;
+    --emerald-200: 166 81% 29%;
+    --emerald-300: 168 76% 36%;
+    --emerald-400: 170 70% 44%;
+    --emerald-500: 172 66% 56%;
+    --emerald-600: 174 68% 68%;
+    --emerald-700: 176 77% 80%;
+    --emerald-800: 178 94% 90%;
+    --emerald-900: 180 100% 97%;
+  }
+}
+
+.swiper-slide-shadow,
+.swiper-slide-shadow-left,
+.swiper-slide-shadow-right,
+.swiper-slide-shadow-top,
+.swiper-slide-shadow-bottom {
+  border-radius: 16px;
+}
+
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
   }
 } 
