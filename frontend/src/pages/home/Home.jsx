@@ -10,8 +10,7 @@ import Process from './components/Process';
 
 const Home = () => {
     return (
-        <div className=''>
-            {/* px-mobile xl:px-xlarge lg:px-large 2xl:max-w-[1440px] 2xl:mx-auto */}
+        <>
             <Navbar />
             <Hero />
             <Challenge />
@@ -20,7 +19,7 @@ const Home = () => {
             <Application />
             <Technology />
             <Footer />
-        </div>
+        </>
     )
 }
 
