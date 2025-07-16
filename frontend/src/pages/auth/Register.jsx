@@ -56,6 +56,10 @@ export default function Register() {
     e.preventDefault();
     if (formStep < 3) return;
     setLoading(true);
+    if (formData.password !== formData.confirmPassword) {
+      setError("Passwords do not match");
+      return;
+    }
 
     try {
       const response = await axios.post('/auth/register', formData);

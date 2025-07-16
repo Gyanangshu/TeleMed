@@ -7,7 +7,7 @@ const User = require('../models/User');
 // Register
 router.post('/register', async (req, res) => {
   try {
-    const { name, email, password, role } = req.body;
+    const { name, email, password, role, phone, specialization, medicalLicense, experience, hospitalName, location } = req.body;
 
     // Check if user exists
     let user = await User.findOne({ email });
@@ -21,6 +21,12 @@ router.post('/register', async (req, res) => {
       email,
       password,
       role,
+      phone,
+      specialization,
+      medicalLicense,
+      experience,
+      hospitalName,
+      location
     });
 
     await user.save();
@@ -39,6 +45,12 @@ router.post('/register', async (req, res) => {
         name: user.name,
         email: user.email,
         role: user.role,
+        phone: user.phone,
+        specialization: user.specialization,
+        medicalLicense: user.medicalLicense,
+        experience: user.experience,
+        hospitalName: user.hospitalName,
+        location: user.location
       },
     });
   } catch (err) {
@@ -78,6 +90,12 @@ router.post('/login', async (req, res) => {
         name: user.name,
         email: user.email,
         role: user.role,
+        phone: user.phone,
+        specialization: user.specialization,
+        medicalLicense: user.medicalLicense,
+        experience: user.experience,
+        hospitalName: user.hospitalName,
+        location: user.location
       },
     });
   } catch (err) {

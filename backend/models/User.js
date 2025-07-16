@@ -16,13 +16,45 @@ const userSchema = new mongoose.Schema({
   },
   password: {
     type: String,
-    required: true
+    required: true,
+    trim: true
   },
   role: {
     type: String,
     enum: ['operator', 'doctor', 'admin'],
     required: true
-  }
+  },
+  specialization: {
+    type: String,
+    required: true,
+    trim: true
+  },
+  medicalLicense: {
+    type: String,
+    required: true,
+    trim: true
+  },
+  experience: {
+    type: String,
+    required: true,
+    trim: true
+  },
+  hospitalName: {
+    type: String,
+    required: true,
+    trim: true
+  },
+  location: {
+    type: String,
+    required: true,
+    trim: true
+  },
+  phone: {
+  type: String,
+  required: true,
+  match: [/^\+?[0-9]{10,15}$/, 'Please enter a valid phone number'],
+  trim: true
+}
 }, {
   timestamps: true
 });
