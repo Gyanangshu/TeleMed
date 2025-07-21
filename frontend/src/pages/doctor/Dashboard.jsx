@@ -2,16 +2,15 @@ import { useState } from 'react';
 import Sidebar from '../../UI/Sidebar';
 import Home from './Home';
 import { useAuth } from '@/contexts/AuthContext';
+import { LuVideo } from "react-icons/lu";
 
 const Dashboard = () => {
-  const [activeTab, setActiveTab] = useState('dashboard');
+  const [activeTab, setActiveTab] = useState('live');
 
   const { user } = useAuth(); 
 
   const navigationConfig = [
-    { id: 'dashboard', label: 'Dashboard', icon: 'Home', component: Home },
-    { id: '', label: 'Dashboard', icon: 'Home', component: 'Home' },
-    { id: '', label: 'Dashboard', icon: 'Home', component: 'Home' }
+    { id: 'live', label: 'Live Calls', icon: LuVideo, component: Home }
   ]
 
   // Find the active navigation item

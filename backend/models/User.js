@@ -26,17 +26,14 @@ const userSchema = new mongoose.Schema({
   },
   specialization: {
     type: String,
-    required: true,
     trim: true
   },
   medicalLicense: {
     type: String,
-    required: true,
     trim: true
   },
   experience: {
     type: String,
-    required: true,
     trim: true
   },
   hospitalName: {

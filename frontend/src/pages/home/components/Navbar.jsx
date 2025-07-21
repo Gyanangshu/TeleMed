@@ -2,6 +2,7 @@ import Logo from '@/UI/Logo';
 import React, { useState, useRef, useEffect } from 'react';
 import { LuMenu } from "react-icons/lu";
 import { RxCross2 } from "react-icons/rx";
+import { Link } from 'react-router-dom';
 
 const Navbar = () => {
 
@@ -30,8 +31,8 @@ const Navbar = () => {
     return (
         <nav className="fixed top-6 left-1/2 transform -translate-x-1/2 bg-white/90 backdrop-blur-xl border border-medical-200 rounded-full px-8 py-3 z-50 shadow-lg">
             <div className="flex items-center md:space-x-16 space-x-6">
-                <Logo bgheight={"h-8"} bgwidth={"w-8"} logoheight={"h-5"} logowidth={"w-5"} text={"text-lg font-bold text-medical-900"}/>
-                
+                <Logo bgheight={"h-8"} bgwidth={"w-8"} logoheight={"h-5"} logowidth={"w-5"} text={"text-lg font-bold text-medical-900"} />
+
                 <div className="hidden md:flex items-center space-x-6 text-sm font-medium">
                     <a
                         href="#about"
@@ -51,10 +52,13 @@ const Navbar = () => {
                     >
                         Tech
                     </a>
-                    <button className="text-sm bg-medical-600 hover:bg-medical-700 text-white rounded-3xl py-2 px-4"
-                    >
-                        Demo
-                    </button>
+                    <Link to={"/login"}>
+                        <button className="text-sm bg-medical-600 hover:bg-medical-700 text-white rounded-3xl py-2 px-4"
+                        >
+                            Try now
+                        </button>
+                    </Link>
+
                 </div>
 
                 <div className='md:hidden' ref={menuRef}>
@@ -90,10 +94,12 @@ const Navbar = () => {
                             >
                                 Tech
                             </a>
-                            <button className="text-sm bg-medical-600 hover:bg-medical-700 text-white rounded-3xl py-2 px-4 mt-2 w-full"
-                            >
-                                Demo
-                            </button>
+                            <Link to={"/login"}>
+                                <button className="text-sm bg-medical-600 hover:bg-medical-700 text-white rounded-3xl py-2 px-4 mt-2 w-full"
+                                >
+                                    Try Now
+                                </button>
+                            </Link>
                         </div>
                     )}
                 </div>

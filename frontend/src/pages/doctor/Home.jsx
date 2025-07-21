@@ -3,6 +3,9 @@ import { useNavigate } from 'react-router-dom';
 import { connectSocket, disconnectSocket, getSocket, isSocketConnected } from '../../utils/socket';
 import { getCalls } from '../../services/callService';
 import { useAuth } from '../../contexts/AuthContext';
+import { LuMapPin, LuTimer } from "react-icons/lu";
+import DashboardBadge from '@/UI/DashboardBadge';
+import ConsultationTimer from '@/UI/ConsultationTimer';
 
 const Home = () => {
     const [calls, setCalls] = useState([]);
@@ -10,10 +13,11 @@ const Home = () => {
     const [error, setError] = useState(null);
     const [socketConnected, setSocketConnected] = useState(false);
     const navigate = useNavigate();
-    const { auth, logout, user } = useAuth();
+    // const { user } = useAuth();
     const pollingIntervalRef = useRef(null);
 
     const fetchCalls = async () => {
+        setLoading(true)
         try {
             console.log('Fetching pending calls...');
             const data = await getCalls();
@@ -32,7 +36,7 @@ const Home = () => {
         fetchCalls();
     }, []);
 
-    console.log("userData: ", user)
+    // console.log("userData: ", user)
 
     // Set up polling as a fallback when socket isn't connected
     useEffect(() => {
@@ -156,11 +160,6 @@ const Home = () => {
         navigate(`/call/${callId}`);
     };
 
-    const handleLogout = () => {
-        logout();
-        navigate('/');
-    };
-
     if (loading) {
         return (
             <div className="min-h-screen bg-gray-100 flex justify-center items-center">
@@ -178,61 +177,62 @@ const Home = () => {
             </div>
         );
     }
-    
+
+    console.log("calls: ", calls)
+
     return (
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-            <div className="flex justify-between items-center mb-6">
-                <h1 className="text-3xl font-bold text-gray-900">Doctor Dashboard</h1>
+        <div className="w-full h-screen overflow-y-auto">
+            <div className="flex items-center justify-between flex-wrap gap-6 py-7 border-b border-medical-200 sm:px-6 lg:px-8 px-2">
+                <div className='flex flex-col gap-3'>
+                    <h1 className="text-3xl font-bold text-medical-900">Live Consultations</h1>
+
+                    {/* Connection status indicator */}
+                    <div className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium w-fit ${socketConnected ? 'bg-emerald-100 text-green-800' : 'bg-yellow-100 text-yellow-800'}`}>
+                        <span className={`h-2 w-2 rounded-full mr-1.5 ${socketConnected ? 'bg-green-400' : 'bg-yellow-400'}`}></span>
+                        {socketConnected ? 'Real-time updates active' : 'Using periodic updates'}
+                    </div>
+                </div>
+
                 <div className="flex items-center gap-3">
                     <button
                         onClick={handleRefresh}
-                        className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md flex items-center gap-2"
+                        className="bg-medical-700 hover:bg-medical-800 text-white px-4 py-2 rounded-xl flex items-center gap-2"
                     >
-                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                        <svg xmlns="http://www.w3.org/2000/svg" className={`h-5 w-5 ${loading ? 'animate-spin' : 'animate-none'}`} viewBox="0 0 20 20" fill="currentColor">
                             <path fillRule="evenodd" d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 010 2H4a1 1 0 01-1-1V3a1 1 0 011-1zm.008 9.057a1 1 0 011.276.61A5.002 5.002 0 0014.001 13H11a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0v-2.101a7.002 7.002 0 01-11.601-2.566 1 1 0 01.61-1.276z" clipRule="evenodd" />
                         </svg>
                         Refresh
                     </button>
-                    <button
-                        onClick={handleLogout}
-                        className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-md flex items-center gap-2"
-                    >
-                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                            <path fillRule="evenodd" d="M3 3a1 1 0 011 1v12a1 1 0 11-2 0V4a1 1 0 011-1zm7.707 3.293a1 1 0 010 1.414L9.414 9H17a1 1 0 110 2H9.414l1.293 1.293a1 1 0 01-1.414 1.414l-3-3a1 1 0 010-1.414l3-3a1 1 0 011.414 0z" clipRule="evenodd" />
-                        </svg>
-                        Logout
-                    </button>
                 </div>
             </div>
 
-            {/* Connection status indicator */}
-            <div className="mb-4">
-                <div className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${socketConnected ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'}`}>
-                    <span className={`h-2 w-2 rounded-full mr-1.5 ${socketConnected ? 'bg-green-400' : 'bg-yellow-400'}`}></span>
-                    {socketConnected ? 'Real-time updates active' : 'Using periodic updates'}
-                </div>
-            </div>
-
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            <div className="md:px-6 px-2 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 py-4">
                 {calls.length === 0 ? (
-                    <div className="col-span-full text-center text-gray-500 py-12">
-                        No pending calls available
+                    <div className="col-span-full text-center text-medical-500 font-medium py-12">
+                        No live calls available
                     </div>
                 ) : (
                     calls.map((call) => (
-                        <div key={call._id} className="bg-white overflow-hidden shadow rounded-lg">
-                            <div className="px-4 py-5 sm:p-6">
-                                <h3 className="text-lg font-medium text-gray-900">
-                                    Patient: {call.patient.name}
-                                </h3>
-                                <div className="mt-2 text-sm text-gray-500">
-                                    <p>Age: {call.patient.age}</p>
-                                    <p>Sex: {call.patient.sex}</p>
-                                    <p>Status: {call.status}</p>
+                        <div key={call._id} className="overflow-hidden border border-medical-200 shadow rounded-xl text-medical-700">
+                            <div className="p-4 sm:p-6 flex flex-col justify-between gap-4 h-full">
+                                <div className='flex items-center justify-between'>
+                                    <h3 className="text-lg font-medium text-medical-900">
+                                        {call.patient.name}
+                                    </h3>
+
+                                    <DashboardBadge text={call.status} color={'medical'} />
                                 </div>
-                                <div className="mt-4">
+
+                                <div className='flex flex-col gap-2'>
+                                    <p className='w-1/2 text-sm'><span className='font-medium'>Age:</span> {call.patient.age}</p>
+                                    <p className='w-1/2 text-sm'><span className='font-medium'>Sex:</span> {call.patient.sex}</p>
+                                    {/* <p className='w-1/2 text-sm flex items-center gap-1'><LuMapPin className='text-lg'/> Nagpur PHC</p> */}
+
+                                </div>
+
+                                <div className="flex items-end justify-between">
+                                    <ConsultationTimer callExpiryTime={"2025-07-21T11:19:00.000Z"} />
                                     <button
-                                        onClick={() => handleJoinCall(call._id)}
                                         className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
                                     >
                                         Join Call
