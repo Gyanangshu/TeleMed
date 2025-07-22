@@ -36,13 +36,13 @@ const Reports = ({ calls, loading, error, showReportPreview, reportContent, hand
 
     return (
         <div className='w-full h-full'>
-            <div className="flex flex-col gap-1 py-7 border-b border-medical-200 sm:px-6 lg:px-8">
+            <div className="flex flex-col gap-1 py-7 border-b border-medical-200 px-4 sm:px-6 lg:px-8">
                 <h1 className="text-3xl font-bold text-medical-900">Reports</h1>
                 <p className='text-medical-600 font-medium'>View all completed consultations data</p>
             </div>
 
             <div className='h-max py-10'>
-                <div className='md:px-6 px-2'>
+                <div className='md:px-6 px-4'>
 
                     {error && (
                         <div className="mb-4 bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-xl relative">
@@ -69,7 +69,7 @@ const Reports = ({ calls, loading, error, showReportPreview, reportContent, hand
                         </button>
 
                         {isOpen && (
-                            <ul className="absolute z-50 mt-2 w-full bg-white border border-medical-200 rounded-xl shadow-md max-h-60">
+                            <ul className="absolute z-40 mt-2 w-full bg-white border border-medical-200 rounded-xl shadow-md max-h-60">
                                 {options.map((option) => (
                                     <li
                                         key={option.value}

@@ -83,27 +83,27 @@ const Home = ({ calls, loading, error, showReportPreview, reportContent, handleG
     return (
         <div className="w-full mx-auto h-full">
 
-            <div className="flex flex-col gap-1 py-7 border-b border-medical-200 sm:px-6 lg:px-8">
+            <div className="flex flex-col gap-1 py-7 border-b border-medical-200 px-4 sm:px-6 lg:px-8">
                 <h1 className="text-3xl font-bold text-medical-900">Welcome, {userName ? userName : 'Admin'}</h1>
                 <p className='text-medical-600 font-medium'>{finalDate}</p>
             </div>
 
-            <div className=' py-6 h-max overflow-y-auto'>
-                <div className="md:px-6 px-2 ">
+            <div className='py-6 h-max overflow-y-auto'>
+                <div className="md:px-6 px-4 ">
                     {error && (
                         <div className="mt-4 bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative">
                             {error}
                         </div>
                     )}
 
-                    <div className='flex flex-wrap items-center gap-4 w-full h-full'>
+                    <div className='grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4 w-full h-full'>
                         <DashboardBoxes text={"Total Consultations"} number={totalConsultations} />
                         <DashboardBoxes text={"Consultations Completed"} number={completedConsultations} />
                         <DashboardBoxes text={"Ongoing Consultations"} number={consultationOngoing} />
                         <DashboardBoxes text={"Patients Referred"} number={referCount} />
                     </div>
 
-                    <div className='flex gap-4 h-full'>
+                    <div className='flex lg:flex-row flex-col gap-4 h-full'>
                         {/* completed consultations */}
                         <div className='xl:w-1/2 w-full rounded-lg border border-medical-200 px-6 py-10 bg-white mt-6 h-fit'>
                             <div className='flex items-center gap-3'>

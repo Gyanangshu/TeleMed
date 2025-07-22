@@ -67,7 +67,7 @@ const Process = () => {
 
                 <div className='mt-20 flex sm:flex-row sm:flex-wrap flex-nowrap flex-col gap-12 justify-center'>
                     {workingSteps.map((item, index) => (
-                        <div key={index} className='border border-medical-200 rounded-xl relative sm:w-2/5 w-full bg-white/60 hover:border-medical-400 hover:shadow-lg shadow-medical-100 transition-all duration-200 ease-in-out group overflow-hidden'>
+                        <div key={index} className='border border-medical-200 rounded-xl relative sm:w-2/5 w-full bg-white hover:border-medical-400 hover:shadow-lg shadow-medical-100 transition-all duration-200 ease-in-out group overflow-hidden'>
                             <span className='bg-medical-100 text-medical-400 rounded-xl rounded-br-[3rem] p-[22px] w-fit text-3xl font-bold absolute -left-1 -top-2'>{item.step}</span>
                             <div className='py-14 px-6 flex flex-col items-center justify-center'>
                                 <span className={`w-20 h-20 mx-auto bg-gradient-to-br ${item.bgGradient} rounded-2xl flex items-center justify-center shadow-lg`}>

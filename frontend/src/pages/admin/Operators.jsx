@@ -8,7 +8,7 @@ const Operators = ({ operators }) => {
   return (
     <div className='w-full h-full'>
 
-      <div className="flex items-center justify-between flex-wrap gap-6 py-7 border-b border-medical-200 sm:px-6 lg:px-8 px-2">
+      <div className="flex items-center justify-between flex-wrap gap-6 py-7 border-b border-medical-200 sm:px-6 lg:px-8 px-4">
         <div className='flex flex-col gap-1 '>
           <h1 className="text-3xl font-bold text-medical-900">Operators</h1>
           <p className='text-medical-600 font-medium'>View complete list of operators</p>
@@ -16,7 +16,7 @@ const Operators = ({ operators }) => {
       </div>
 
       <div className='h-max py-10'>
-        <div className='md:px-6 px-2 grid grid-cols-2 gap-6'>
+        <div className='md:px-6 px-4 grid lg:grid-cols-2 grid-cols-1 gap-6'>
           {operators.map((item, index) => (
             <div key={index} className='bg-gradient-to-r from-medical-600 to-emerald-600 rounded-xl px-4 pt-4 pb-2 mb-2 text-white w-full'>
 
@@ -31,7 +31,7 @@ const Operators = ({ operators }) => {
                 </div>
               </div>
 
-              <div className='my-6 p-4 grid grid-cols-2 gap-y-4'>
+              <div className='my-6 p-4 grid md:grid-cols-2 grid-cols-1 gap-y-4'>
                 <div className='flex items-center gap-2'>
                   <LuMail className='text-white w-5 h-5' />
                   <p className='pb-1 text-lg'>{item.email}</p>

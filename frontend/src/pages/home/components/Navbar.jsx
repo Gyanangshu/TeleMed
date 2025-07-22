@@ -53,7 +53,7 @@ const Navbar = () => {
                         Tech
                     </a>
                     <Link to={"/login"}>
-                        <button className="text-sm bg-medical-600 hover:bg-medical-700 text-white rounded-3xl py-2 px-4"
+                        <button className="text-sm text-nowrap bg-medical-600 hover:bg-medical-700 text-white rounded-3xl py-2 px-4"
                         >
                             Try now
                         </button>
@@ -95,7 +95,7 @@ const Navbar = () => {
                                 Tech
                             </a>
                             <Link to={"/login"}>
-                                <button className="text-sm bg-medical-600 hover:bg-medical-700 text-white rounded-3xl py-2 px-4 mt-2 w-full"
+                                <button className="text-sm text-nowrap bg-medical-600 hover:bg-medical-700 text-white rounded-3xl py-2 px-4 mt-2 w-full"
                                 >
                                     Try Now
                                 </button>

@@ -182,7 +182,7 @@ const Home = () => {
 
     return (
         <div className="w-full h-screen overflow-y-auto">
-            <div className="flex items-center justify-between flex-wrap gap-6 py-7 border-b border-medical-200 sm:px-6 lg:px-8 px-2">
+            <div className="flex items-center justify-between flex-wrap gap-6 py-7 border-b border-medical-200 sm:px-6 lg:px-8 px-4">
                 <div className='flex flex-col gap-3'>
                     <h1 className="text-3xl font-bold text-medical-900">Live Consultations</h1>
 
@@ -206,7 +206,7 @@ const Home = () => {
                 </div>
             </div>
 
-            <div className="md:px-6 px-2 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 py-4">
+            <div className="md:px-6 px-4 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 py-4">
                 {calls.length === 0 ? (
                     <div className="col-span-full text-center text-medical-500 font-medium py-12">
                         No live calls available
@@ -233,6 +233,7 @@ const Home = () => {
                                 <div className="flex items-end justify-between">
                                     <ConsultationTimer callExpiryTime={"2025-07-21T11:19:00.000Z"} />
                                     <button
+                                    onClick={() => handleJoinCall(call._id)}
                                         className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
                                     >
                                         Join Call

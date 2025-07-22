@@ -7,6 +7,7 @@ const ConsultationTimer = ({ callExpiryTime }) => {
 
     useEffect(() => {
         const expiry = new Date(callExpiryTime).getTime();
+        let timer; // Declare timer before use
 
         const updateTimer = () => {
             const now = new Date().getTime();
@@ -22,14 +23,15 @@ const ConsultationTimer = ({ callExpiryTime }) => {
                 setColor("red");
             }
 
-            if (diff === 0) clearInterval(timer);
+            if (diff === 0) clearInterval(timer); // Now timer is declared
         };
 
         updateTimer(); // run once immediately
-        const timer = setInterval(updateTimer, 1000);
+        timer = setInterval(updateTimer, 1000);
 
         return () => clearInterval(timer);
     }, [callExpiryTime]);
+
 
     // Format seconds into mm:ss
     const formatTime = (secs) => {

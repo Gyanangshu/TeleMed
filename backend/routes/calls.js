@@ -10,16 +10,16 @@ module.exports = (io) => {
   router.post('/', auth, authorize('operator'), async (req, res) => {
     try {
       const { patientId } = req.body;
-      
+
       // Log request body for debugging
       console.log('Request body:', req.body);
-      
+
       if (!patientId) {
         return res.status(400).json({ message: 'Patient ID is required' });
       }
 
       const operatorId = req.body.operatorId || req.user.userId;
-      
+
       // Generate call details
       const now = new Date();
       const callDetails = {
@@ -46,20 +46,20 @@ module.exports = (io) => {
       const populatedCall = await Call.findById(savedCall._id)
         .populate('patient', 'name phoneNumber age sex height weight oxygenLevel bloodPressure temperature pulse symptoms')
         .populate('operator', 'name');
-      
+
       // Emit socket event to notify doctors of new pending call
       console.log('Emitting new-pending-call event with data:', JSON.stringify(populatedCall));
-      
+
       try {
         // Send to doctors room
         io.to('doctors').emit('new-pending-call', populatedCall);
-        
+
         // Also broadcast globally as a fallback
         io.emit('global-pending-call-update', {
           action: 'new',
           callId: savedCall._id
         });
-        
+
         console.log('Emitted new-pending-call event to doctors room');
       } catch (emitError) {
         console.error('Error emitting socket event:', emitError);
@@ -70,8 +70,8 @@ module.exports = (io) => {
     } catch (err) {
       console.error('Error creating call:', err);
       if (err.name === 'ValidationError') {
-        return res.status(400).json({ 
-          message: 'Validation error', 
+        return res.status(400).json({
+          message: 'Validation error',
           errors: Object.keys(err.errors).reduce((acc, key) => {
             acc[key] = err.errors[key].message;
             return acc;
@@ -127,19 +127,19 @@ module.exports = (io) => {
     try {
       const { id } = req.params;
       console.log('Fetching call with ID:', id);
-      
+
       // Check if ID is valid
       if (!id || id === 'undefined') {
         console.log('Invalid call ID provided');
         return res.status(400).json({ message: 'Invalid call ID' });
       }
-      
+
       // Check if ID is a valid MongoDB ObjectId
       if (!mongoose.Types.ObjectId.isValid(id)) {
         console.log('Invalid MongoDB ObjectId format');
         return res.status(400).json({ message: 'Invalid call ID format' });
       }
-      
+
       console.log('Querying database for call...');
       const call = await Call.findById(id)
         .populate('patient', 'name phoneNumber age sex height weight oxygenLevel bloodPressure temperature pulse symptoms')
@@ -214,29 +214,29 @@ module.exports = (io) => {
   router.post('/:id/end', auth, async (req, res) => {
     try {
       const { id } = req.params;
-      
+
       // Log the entire request body for debugging
       console.log('End call request body:', req.body);
       console.log('User from auth middleware:', req.user);
-      
+
       const { doctorAdvice, referred } = req.body;
-      
+
       // Check if ID is valid
       if (!id || id === 'undefined') {
         return res.status(400).json({ message: 'Invalid call ID' });
       }
-      
+
       // Check if ID is a valid MongoDB ObjectId
       if (!mongoose.Types.ObjectId.isValid(id)) {
         return res.status(400).json({ message: 'Invalid call ID format' });
       }
-      
+
       const call = await Call.findById(id);
       if (!call) {
         return res.status(404).json({ message: 'Call not found' });
       }
 
-       // // Check if user has permission to end this call
+      // // Check if user has permission to end this call
       // if (req.user.role === 'operator' && call.operator.toString() !== req.user.userId) {
       //   return res.status(403).json({ message: 'Not authorized to end this call' });
       // }
@@ -248,7 +248,7 @@ module.exports = (io) => {
       // Update call status
       call.status = 'completed';
       call.endTime = new Date();
-      
+
       // Update doctor's advice if provided
       if (doctorAdvice !== undefined) {
         console.log('Updating doctor advice:', doctorAdvice);
@@ -283,6 +283,23 @@ module.exports = (io) => {
       res.status(500).json({ message: 'Server error' });
     }
   });
+
+
+  // Get all calls created by a particular operator 
+  router.post('/created', auth, authorize('operator'), async (req, res) => {
+    const { userId } = req.body;
+    try {
+      const retrieveCalls = await Call.find({
+        operator: userId,
+        status: "completed"
+      });
+
+      return res.status(200).json({ calls: retrieveCalls });
+    } catch (error) {
+      console.error('Error retrieving calls data for operator:', error);
+      return res.status(500).json({ message: 'Error retrieving calls data for operator', error: error.message });
+    }
+  })
 
   return router;
 }; 

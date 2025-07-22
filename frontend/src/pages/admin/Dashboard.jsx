@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react';
 import Home from './Home';
 import Reports from './Reports';
 import Sidebar from '@/UI/Sidebar';
-import { useAuth } from '@/contexts/AuthContext';
 import { LuChartColumn, LuFileText, LuHospital  } from "react-icons/lu";
 import { FaUserDoctor } from "react-icons/fa6";
 import axios from "@/utils/axios"
@@ -21,9 +20,9 @@ export default function AdminDashboard() {
   const [filter, setFilter] = useState('all'); // all, ongoing, completed
   const [doctors, setDoctors] = useState([]);
   const [operators, setOperators] = useState([]);
+  const [userData, setUserData] = useState([]);
 
   const [activeTab, setActiveTab] = useState('overview');
-  const { user } = useAuth();
 
   useEffect(() => {
     const fetchDoctors = async () => {
@@ -165,11 +164,24 @@ export default function AdminDashboard() {
     }
   };
 
+    const fetchUserData = async () => {
+    try {
+      const response = await axios.get('/users/me');
+      setUserData(response.data);
+    } catch (error) {
+      console.log("error fetching userData: ", error);
+    }
+  };
+
+  useEffect(() => {
+    fetchUserData();
+  }, [])
+
   return (
     <div className="max-h-screen max-w-[1920px] mx-auto flex">
-      <div>
+      <div className='z-30'>
         <Sidebar
-          user={user}
+          userData={userData}
           navigation={navigationConfig}
           activeTab={activeTab}
           onTabChange={setActiveTab}

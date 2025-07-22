@@ -1,13 +1,12 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Sidebar from '../../UI/Sidebar';
 import Home from './Home';
-import { useAuth } from '@/contexts/AuthContext';
 import { LuVideo } from "react-icons/lu";
+import axios from "@/utils/axios"
 
 const Dashboard = () => {
   const [activeTab, setActiveTab] = useState('live');
-
-  const { user } = useAuth(); 
+  const [userData, setUserData] = useState([]);
 
   const navigationConfig = [
     { id: 'live', label: 'Live Calls', icon: LuVideo, component: Home }
@@ -29,10 +28,23 @@ const Dashboard = () => {
     }
   };
 
+  const fetchUserData = async () => {
+    try {
+      const response = await axios.get('/users/me');
+      setUserData(response.data);
+    } catch (error) {
+      console.log("error fetching userData: ", error);
+    }
+  };
+
+  useEffect(() => {
+    fetchUserData();
+  }, [])
+
   return (
     <div className="min-h-screen max-w-[1920px] mx-auto flex">
       <Sidebar
-        user={user}
+        userData={userData}
         navigation={navigationConfig}
         activeTab={activeTab}
         onTabChange={setActiveTab}

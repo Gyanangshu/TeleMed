@@ -29,8 +29,8 @@ const Hero = () => {
                         Connecting villages with specialists through real-time video
                         consultations. Bridging healthcare gaps with technology.
                     </p>
-                    <div className='flex items-center gap-4 mt-6 md:flex-nowrap flex-wrap'>
-                        <Link to={"/login"}>
+                    <div className='flex items-center gap-4 mt-6 md:flex-nowrap flex-wrap w-full'>
+                        <Link to={"/login"} className='w-full md:w-fit'>
                             <button className='bg-medical-600 hover:bg-medical-700 text-white rounded-xl px-8 py-2 text-lg font-medium flex items-center justify-center md:justify-start gap-2 md:w-fit w-full group'>Try Now
                                 <span className='mt-1 group-hover:translate-x-1 transition-transform pb-[3px]'><TbCircleArrowRightFilled /></span>
                             </button>

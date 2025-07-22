@@ -104,12 +104,12 @@ const Consultations = () => {
 
     return (
         <div className="w-full mx-auto h-full">
-            <div className="flex flex-col gap-1 py-7 border-b border-medical-200 sm:px-6 lg:px-8">
+            <div className="flex flex-col gap-1 py-7 border-b border-medical-200 px-4 sm:px-6 lg:px-8">
                 <h1 className="text-3xl font-bold text-medical-900">Patient Consultation Form</h1>
                 <p className='text-medical-600 font-medium'>Please fill in the patient details to start the consultation</p>
             </div>
 
-            <div className="px-4 sm:px-6 lg:px-36 py-6 bg-medical-50">
+            <div className="px-4 sm:px-6 xl:px-36 py-6 bg-medical-50">
                 <form onSubmit={handleSubmit} className='flex flex-col gap-8'>
                     {error && (
                         <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4" role="alert">
@@ -290,31 +290,22 @@ const Consultations = () => {
 
                     <div className='flex items-center justify-center w-full'>
                         <button type='submit' disabled={loading} className='w-fit flex items-center gap-4 bg-gradient-to-r from-medical-600 to-emerald-600 hover:from-medical-700 hover:to-emerald-700 text-white px-12 py-4 text-xl rounded-xl shadow-lg disabled:opacity-50 disabled:cursor-not-allowed group'>
-                            <LuVideo />
-                            Start Video Consultation
-                            <LuCircleArrowRight className='group-hover:translate-x-1 transition-transform' />
+                            {loading ?
+                                'Creating Call...'
+                                :
+                                (
+                                    <>
+                                        <LuVideo />
+                                        Start Video Consultation
+                                        <LuCircleArrowRight className='group-hover:translate-x-1 transition-transform' />
+                                    </>
+                                )}
+
                         </button>
                     </div>
 
 
                     {/* <div className='grid grid-cols-2 gap-6'>
-                        
-
-                
-                
-
-                    <div className="flex flex-col gap-1 my-4">
-                        <label htmlFor="symptoms" className='text-sm font-medium text-gray-700'>Symptoms</label>
-                        <textarea
-                            id="symptoms"
-                            name="symptoms"
-                            value={patientData.symptoms}
-                            onChange={handleInputChange}
-                            required
-                            className='border border-gray-300 outline-blue-500 rounded-md p-2'
-                        />
-                    </div>
-
                     <button type="submit" disabled={loading} className='bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-md flex items-center gap-2'>
                         {loading ? 'Creating Call...' : 'Start Call'}
                     </button> */}
