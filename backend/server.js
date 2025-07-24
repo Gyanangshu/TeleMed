@@ -14,7 +14,7 @@ const server = http.createServer(app);
 
 // CORS configuration
 const corsOptions = {
-  origin: ['https://telemedhealthcare.netlify.app/', 'http://localhost:3000'],
+  origin: ['https://telemedhealthcare.netlify.app', 'http://localhost:3000'],
   methods: ['GET', 'POST', 'PUT', 'DELETE'],
   allowedHeaders: ['Content-Type', 'Authorization'],
   credentials: true
