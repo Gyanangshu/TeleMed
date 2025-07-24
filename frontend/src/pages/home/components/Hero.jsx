@@ -6,10 +6,27 @@ import Badge from '@/UI/Badge';
 import { Swiper, SwiperSlide } from 'swiper/react';
 import 'swiper/css';
 import 'swiper/css/effect-cards';
-import { EffectCards } from 'swiper/modules';
+import { EffectCards, Autoplay } from 'swiper/modules';
 import { Link } from 'react-router-dom';
+import operatorImg from "@/images/operatorForm.png";
 
 const Hero = () => {
+
+    const swiperImages = [
+        {
+            header: "OperatorDashboard.jsx",
+            content: operatorImg
+        },
+        {
+            header: "DoctorDashboard.jsx",
+            content: operatorImg
+        },
+        {
+            header: "AdminDashboard.jsx",
+            content: operatorImg
+        },
+    ]
+
     return (
         <main className='h-full flex items-center bg-gradient-to-br from-blue-50 via-white to-blue-50'>
             <div className='flex w-full items-center px-mobile xl:px-xlarge lg:px-large 2xl:max-w-[1440px] 2xl:mx-auto py-40'>
@@ -32,11 +49,13 @@ const Hero = () => {
                     <div className='flex items-center gap-4 mt-6 md:flex-nowrap flex-wrap w-full'>
                         <Link to={"/login"} className='w-full md:w-fit'>
                             <button className='bg-medical-600 hover:bg-medical-700 text-white rounded-xl px-8 py-2 text-lg font-medium flex items-center justify-center md:justify-start gap-2 md:w-fit w-full group'>Try Now
-                                <span className='mt-1 group-hover:translate-x-1 transition-transform pb-[3px]'><TbCircleArrowRightFilled /></span>
+                                <span className='mt-1 group-hover:translate-x-1 transition-transform pb-[3px]'>
+                                    <TbCircleArrowRightFilled />
+                                </span>
                             </button>
                         </Link>
 
-                        <button className='border px-8 py-2 text-lg font-medium border-medical-300 text-medical-700 hover:bg-medical-50 rounded-xl flex items-center justify-center md:justify-start gap-3 md:w-fit w-full'>
+                        <button className='bg-white border px-8 py-2 text-lg font-medium border-medical-300 text-medical-700 hover:bg-medical-50 rounded-xl flex items-center justify-center md:justify-start gap-3 md:w-fit w-full'>
                             <span><FiGithub /></span>
                             View Code
                         </button>
@@ -48,10 +67,13 @@ const Hero = () => {
                     <Swiper
                         effect="cards"
                         grabCursor={true}
-                        modules={[EffectCards]}
-                        className="mySwiper w-[480px] h-[400px]"
+                        modules={[EffectCards, Autoplay]}
+                        autoplay={{
+                            pauseOnMouseEnter: true
+                        }}
+                        className="mySwiper w-[480px] h-[420px]"
                     >
-                        {[1, 2, 3].map((_, index) => (
+                        {swiperImages.map((item, index) => (
                             <SwiperSlide key={index}>
                                 <div className="text-white rounded-xl overflow-hidden w-full">
 
@@ -61,11 +83,11 @@ const Hero = () => {
                                             <span className="p-[6px] rounded-full bg-[#FFBD44]"></span>
                                             <span className="p-[6px] rounded-full bg-[#00CA4E]"></span>
                                         </div>
-                                        <p>Header</p>
+                                        <p>{item.header}</p>
                                     </div>
 
-                                    <div className="h-[350px] bg-white text-black p-4">
-                                        <p>Body Content #{index + 1}</p>
+                                    <div className="h-[380px] bg-white border border-medical-100">
+                                        <img loading='lazy' src={item.content} alt={item.header} />
                                     </div>
                                 </div>
                             </SwiperSlide>
