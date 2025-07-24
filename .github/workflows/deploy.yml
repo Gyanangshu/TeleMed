@@ -1,0 +1,21 @@
+name: Deploy TeleMed MERN App with Docker
+
+on: 
+  push:
+    branches:
+      - main
+
+jobs: 
+  deploy-backend:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger Render Deploy
+        run: |
+          curl -X POST "${{ secrets.RENDER_DEPLOY_HOOK }}"
+      
+  deploy-frontend:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger Netlify Deploy
+        run: |
+          curl -X POST -d '{}' "${{ secrets.NETLIFY_DEPLOY_HOOK }}"
