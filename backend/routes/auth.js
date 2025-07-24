@@ -28,7 +28,7 @@ router.post('/register', async (req, res) => {
       hospitalName,
       location
     });
-
+ 
     await user.save();
 
     // Create token
