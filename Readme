@@ -1,25 +1,25 @@
 *********** DEPLOYMENT ***********
-- I want to make this an end-to-end project.
-- I will use github actions to retrieve the env variables and use already in-place free hosting services.
+-(DONE) I want to make this an end-to-end project.
+-(DONE) I will use github actions to retrieve the env variables and use already in-place free hosting services.
 
 
 *********** FRONTEND ***********
 -(DONE) Create the home page with the write-up provided by chatGPT.
 
-- The registration or login page will take some time to give the response when used for the first time. Since the backend server will be off. Thus I should show a text if the response takes more than 5 seconds stating "Please wait..." or something.
+-(DONE: USED SPINNER ANIMATION) The registration or login page will take some time to give the response when used for the first time. Since the backend server will be off. Thus I should show a text if the response takes more than 5 seconds stating "Please wait..." or something.
 
-- Recreate the entire UI of all the pages such as Registration/Login, Dashboards, etc.
+-(DONE) Recreate the entire UI of all the pages such as Registration/Login, Dashboards, etc.
 
-- Implement some more features to specific dashboard
+-(DONE) Implement some more features to specific dashboard
     - like Operator dashboard could use one history table, which will have all the successfull appointments that he ceated. This will allow the operator to access the patient prescriptions even after the appointment dates. 
     - Doctor dashboard should also contain a history table (doctor specific). This table shoud contain the details of the patients that the doctor has treated.
     - Admin Dashboard ???
 
-- Doctor dashboard should have a floating live patient count kind of a label. This label should appear on all the pages at all times.
+-(DONE) Doctor dashboard should have a floating live patient count kind of a label. This label should appear on all the pages at all times.
 
-- All the dashboard should use a side navigation bar which can contain links to different pages containing different tables etc.
+-(DONE) All the dashboard should use a side navigation bar which can contain links to different pages containing different tables etc.
 
-- (ALREADY ASKED A FEW DETAILS DURING REGISTRATION) All dashboards should have a porfile page. Here the respective person according to their respective role could fill their personal details
+-(NOT NEEDED) (ALREADY ASKED A FEW DETAILS DURING REGISTRATION) All dashboards should have a porfile page. Here the respective person according to their respective role could fill their personal details
     - later I could use the webcam to take a photo of their ID and use AI to get their details and automatically fill the profile page form.
 
 
@@ -27,11 +27,11 @@
 - need to implement a race condition handler:
     - If two or more different doctors clicks to join the same patient video call.
 
-- an API to get doctor specific successful appointment history table data.
+-(NOT NEEDED) an API to get doctor specific successful appointment history table data.
 
-- some APIs to be accessed by the Admin. 
+-(DONE) some APIs to be accessed by the Admin. 
     - API 1: this api will have all the doctor details who have created their profile in my platform. The admin should have a separate page in their dashboard where they can search for doctors. 
     - API 2: this api will have the details of all the operators.
     - Search feature must be added either fontend or backend. Most probably, frontend should handle this.
 
-- need to add more fields to the registration schema. Refer the registration frontend page for new fields. 
+-(DONE) need to add more fields to the registration schema. Refer the registration frontend page for new fields. 
