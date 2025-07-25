@@ -55,10 +55,12 @@ const Hero = () => {
                             </button>
                         </Link>
 
-                        <button className='bg-white border px-8 py-2 text-lg font-medium border-medical-300 text-medical-700 hover:bg-medical-50 rounded-xl flex items-center justify-center md:justify-start gap-3 md:w-fit w-full'>
-                            <span><FiGithub /></span>
-                            View Code
-                        </button>
+                        <Link to={"https://github.com/Gyanangshu/TeleMed"} target={'_blank'} className='w-full md:w-fit'>
+                            <button className='bg-white border px-8 py-2 text-lg font-medium border-medical-300 text-medical-700 hover:bg-medical-50 rounded-xl flex items-center justify-center md:justify-start gap-3 md:w-fit w-full'>
+                                <span><FiGithub /></span>
+                                View Code
+                            </button>
+                        </Link>
                     </div>
                 </div>
 

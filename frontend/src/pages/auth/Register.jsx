@@ -125,10 +125,10 @@ export default function Register() {
 
   return (
     <div className="min-h-screen flex items-center justify-center w-full px-mobile xl:px-xlarge lg:px-large 2xl:max-w-[1440px] 2xl:mx-auto">
-      <div className="flex w-full items-center justify-evenly gap-8">
+      <div className="flex w-full items-center justify-evenly gap-8 flex-wrap">
 
         {/* left side */}
-        <div className='w-1/2 flex flex-col items-center'>
+        <div className='xl:w-1/2 w-full flex flex-col items-center'>
           <div className='flex flex-col gap-8'>
             <Link to={"/"}>
               <Logo bgheight={"h-12"} bgwidth={"w-12"} logoheight={"h-7"} logowidth={"w-7"} text={"text-3xl font-bold text-medical-800"} />
@@ -168,7 +168,7 @@ export default function Register() {
           </div>
         </div>
 
-        <form className="w-1/2 max-w-lg border border-medical-200 shadow-xl shadow-medical-100 bg-white/95 backdrop-blur-sm rounded-xl py-6 my-6 px-9 flex flex-col gap-8" onSubmit={handleSubmit}>
+        <form className="xl:w-1/2 w-full max-w-lg border border-medical-200 shadow-xl shadow-medical-100 bg-white/95 backdrop-blur-sm rounded-xl py-6 my-6 px-9 flex flex-col gap-8" onSubmit={handleSubmit}>
           {error && (
             <div className="rounded-md bg-red-50 p-4">
               <div className="text-sm text-red-700">{error}</div>
@@ -248,7 +248,7 @@ export default function Register() {
                           {role.requirements.map((req, index) => (
                             <span
                               key={index}
-                              className="text-xs bg-medical-200 py-[2px] px-2 rounded-xl"
+                              className="text-xs bg-medical-200 py-[2px] px-2 rounded-xl w-fit"
                             >
                               {req}
                             </span>
