@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const { auth, authorize } = require('../middleware/auth');
 const Call = require('../models/Call');
+const Patient = require('../models/Patient')
 const mongoose = require('mongoose');
 
 // Export the router factory function that accepts io as a parameter
@@ -289,12 +290,28 @@ module.exports = (io) => {
   router.post('/created', auth, authorize('operator'), async (req, res) => {
     const { userId } = req.body;
     try {
-      const retrieveCalls = await Call.find({
+      const calls = await Call.find({
         operator: userId,
         status: "completed"
+      }).populate('doctor', 'name');
+
+      // fetch patients using the patientid
+      const patientIds = calls.map(call => call.patient);
+      const patients = await Patient.find({ _id: { $in: patientIds } });
+
+      // Create a map for quick lookup
+      const patientMap = {};
+      patients.forEach(patient => {
+        patientMap[patient._id] = patient;
       });
 
-      return res.status(200).json({ calls: retrieveCalls });
+      // Merge patient data into calls
+      const callsWithPatientData = calls.map(call => ({
+        ...call.toObject(),
+        patient: patientMap[call.patient] || null
+      }));
+
+      return res.status(200).json({ calls: callsWithPatientData });
     } catch (error) {
       console.error('Error retrieving calls data for operator:', error);
       return res.status(500).json({ message: 'Error retrieving calls data for operator', error: error.message });

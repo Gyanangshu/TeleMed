@@ -4,7 +4,7 @@ import { MdOutlineMoreTime } from "react-icons/md";
 import { TbCalendarTime } from "react-icons/tb";
 import Report from '@/UI/Report';
 
-const Home = ({ calls, loading, error, showReportPreview, reportContent, handleGenerateReport, handleDownloadReport, handlePrintReport, selectedCall, setShowReportPreview }) => {
+const Home = ({ calls, loading, error, showReportPreview, reportContent, handleGenerateReport, handleDownloadReport, handlePrintReport, selectedCall, setShowReportPreview, userData }) => {
 
     // console.log("selectedCall: ", selectedCall);
     // console.log("showReportPreview: ", showReportPreview);
@@ -69,7 +69,7 @@ const Home = ({ calls, loading, error, showReportPreview, reportContent, handleG
     // console.log("completedConsultations: ", completedConsultations);
     // console.log("consultationOngoing: ", consultationOngoing);
     // console.log("referCount: ", referCount);
-    // console.log("calls data: ", calls);
+    console.log("todaysData: ", todaysData);
 
     const formatTimeWithAmPm = (createdAt) => {
         const date = new Date(createdAt);
@@ -84,7 +84,7 @@ const Home = ({ calls, loading, error, showReportPreview, reportContent, handleG
         <div className="w-full mx-auto h-full">
 
             <div className="flex flex-col gap-1 py-7 border-b border-medical-200 px-4 sm:px-6 lg:px-8">
-                <h1 className="text-3xl font-bold text-medical-900">Welcome, {userName ? userName : 'Admin'}</h1>
+                <h1 className="text-3xl font-bold text-medical-900">Welcome, {userData?.name ? userData?.name : 'Admin'}</h1>
                 <p className='text-medical-600 font-medium'>{finalDate}</p>
             </div>
 
@@ -127,8 +127,8 @@ const Home = ({ calls, loading, error, showReportPreview, reportContent, handleG
                                                     </span>
 
                                                     <div>
-                                                        <p className='font-medium text-lg'>{item.patient.name}</p>
-                                                        <p className='text-sm text-medical-700'>with Dr. {item.doctor.name}</p>
+                                                        <p className='font-medium text-lg'>{item?.patient?.name}</p>
+                                                        <p className='text-sm text-medical-700'>with Dr. {item?.doctor?.name}</p>
                                                     </div>
                                                 </div>
 
@@ -183,7 +183,7 @@ const Home = ({ calls, loading, error, showReportPreview, reportContent, handleG
 
                                                     <div>
                                                         <p className='font-medium text-lg'>{item.patient.name}</p>
-                                                        <p className='text-sm text-medical-700'>with Dr. {item.doctor.name}</p>
+                                                        <p className='text-sm text-medical-700'>with Dr. {item?.doctor?.name}</p>
                                                     </div>
                                                 </div>
 

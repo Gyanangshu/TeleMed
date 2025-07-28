@@ -9,6 +9,8 @@ import 'swiper/css/effect-cards';
 import { EffectCards, Autoplay } from 'swiper/modules';
 import { Link } from 'react-router-dom';
 import operatorImg from "@/images/operatorForm.png";
+import adminImg from "@/images/adminImg.png";
+import doctorImg from "@/images/doctorImg.png";
 
 const Hero = () => {
 
@@ -19,11 +21,11 @@ const Hero = () => {
         },
         {
             header: "DoctorDashboard.jsx",
-            content: operatorImg
+            content: doctorImg
         },
         {
             header: "AdminDashboard.jsx",
-            content: operatorImg
+            content: adminImg
         },
     ]
 
