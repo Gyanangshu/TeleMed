@@ -46,7 +46,7 @@ export default function AdminDashboard() {
     fetchDoctors();
     fetchOperators()
   }, [])
-
+ 
   const fetchCalls = async () => {
     setLoading(true);
     try {
@@ -126,7 +126,7 @@ export default function AdminDashboard() {
       label: 'Overview',
       icon: LuChartColumn,
       component: (props) =>
-        <Home {...props} calls={calls} loading={loading} error={error} showReportPreview={showReportPreview} setShowReportPreview={setShowReportPreview} reportContent={reportContent} handleGenerateReport={handleGenerateReport} handleDownloadReport={handleDownloadReport} handlePrintReport={handlePrintReport} selectedCall={selectedCall} />
+        <Home {...props} calls={calls} loading={loading} error={error} showReportPreview={showReportPreview} setShowReportPreview={setShowReportPreview} reportContent={reportContent} handleGenerateReport={handleGenerateReport} handleDownloadReport={handleDownloadReport} handlePrintReport={handlePrintReport} selectedCall={selectedCall} userData={userData} />
     },
     {
       id: 'reports',

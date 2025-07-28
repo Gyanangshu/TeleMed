@@ -9,7 +9,7 @@ const Dashboard = () => {
 
   const [activeTab, setActiveTab] = useState('overview');
   const [userData, setUserData] = useState([]);
-  const [allConsultations, setAllConsultations] = useState([])
+  const [allConsultations, setAllConsultations] = useState([]);
 
   const fetchUserData = async () => {
     try {
@@ -44,7 +44,7 @@ const Dashboard = () => {
       id: 'overview',
       label: 'Overview',
       icon: LuChartColumn,
-      component: (props) => <Home {...props} allConsultations={allConsultations} />
+      component: (props) => <Home {...props} allConsultations={allConsultations} userData={userData}/>
     },
     {
       id: 'consultations',

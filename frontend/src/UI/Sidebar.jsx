@@ -18,6 +18,8 @@ const Sidebar = ({ userData, navigation, activeTab, onTabChange }) => {
     const handleLogout = () => {
         logout();
         navigate('/');
+        localStorage.removeItem('user');
+        localStorage.removeItem('userName');
     };
 
     console.log("user data sidbar: ", userData)
@@ -81,9 +83,9 @@ const Sidebar = ({ userData, navigation, activeTab, onTabChange }) => {
                             {userName.charAt(0)}
                         </div>
                         <div>
-                            <p className="font-semibold">{userRole === 'doctor' ? `Dr. ${userName}` : userName}</p>
+                            <p className="font-semibold">{userRole === 'doctor' ? `Dr. ${userData?.name}` : userData?.name}</p>
                             <p className="text-sm text-white/80">
-                                {userData?.specialization ? userData.specialization : userRole}</p>
+                                {userData?.specialization ? userData?.specialization : userData?.role}</p>
                         </div>
                     </div>
 

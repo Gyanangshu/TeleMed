@@ -4,10 +4,11 @@ import { LuFileText } from 'react-icons/lu';
 import { MdOutlineLibraryAddCheck } from 'react-icons/md';
 import { generateConsultationReport } from '@/utils/reportGenerator';
 
-const Home = ({ allConsultations }) => {
+const Home = ({ allConsultations, userData }) => {
     const [showReportPreview, setShowReportPreview] = useState(false);
     const [reportContent, setReportContent] = useState('');
     const userName = localStorage.getItem('userName');
+    const [selectedCall, setSelectedCall] = useState(null);
 
     const tableHeader = ["Patient", "Age", "Sex", "Date & Time", "Referred", "Action"];
 
@@ -46,7 +47,7 @@ const Home = ({ allConsultations }) => {
     return (
         <div className='w-full mx-auto h-full'>
             <div className="flex flex-col gap-1 py-7 border-b border-medical-200 px-4 lg:px-8">
-                <h1 className="text-3xl font-bold text-medical-900">Welcome, {userName ? userName : 'Operator'}</h1>
+                <h1 className="text-3xl font-bold text-medical-900">Welcome, {userData?.name ? userData?.name : 'Operator'}</h1>
                 <p className='text-medical-600 font-medium'>View & access all your created calls data</p>
             </div>
 

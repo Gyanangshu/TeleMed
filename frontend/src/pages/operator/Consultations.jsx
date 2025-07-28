@@ -11,7 +11,7 @@ const Consultations = () => {
         name: '',
         phoneNumber: '',
         age: '',
-        sex: '',
+        sex: 'male',
         symptoms: '',
         height: '',
         weight: '',
