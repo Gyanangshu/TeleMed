@@ -67,6 +67,14 @@ export default function Login() {
                 Sign in to continue connecting patients with specialists across
                 India.
               </p>
+
+              <div className='text-gray-500 text-sm'>
+                <p className='font-medium'>Test Credendials:</p>
+                <ul className='list-disc list-inside'>
+                  <li>email: [admin/doctor/operator]@gmail.com</li>
+                  <li>password: 123456</li>
+                </ul>
+              </div>
             </div>
           </div>
         </div>
